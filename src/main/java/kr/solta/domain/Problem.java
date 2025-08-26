@@ -7,11 +7,15 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Problem extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,7 +24,7 @@ public class Problem extends BaseEntity {
     private String title;
 
     @Column(nullable = false, unique = true)
-    private Long bojId;
+    private long bojProblemId;
 
     @Enumerated(EnumType.STRING)
     private Tier tier;

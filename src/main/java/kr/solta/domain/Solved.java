@@ -7,10 +7,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.Objects;
+
+import static java.util.Objects.*;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Solved extends BaseEntity{
 
     @Id
@@ -25,4 +32,14 @@ public class Solved extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Problem problem;
+
+    public static Solved submit(int solveTimeSeconds, Member member, Problem problem) {
+        Solved solved = new Solved();
+
+        solved.solveTimeSeconds = solveTimeSeconds;
+        solved.member = requireNonNull(member);
+        solved.problem = requireNonNull(problem);
+
+        return solved;
+    }
 }
