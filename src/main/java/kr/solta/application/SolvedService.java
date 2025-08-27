@@ -26,7 +26,7 @@ public class SolvedService implements SolvedRegister {
 
     @Override
     public Solved register(SolvedRegisterRequest solvedRegisterRequest) {
-        Member solvedMember = findOrCreteMember(solvedRegisterRequest.bojId());
+        Member solvedMember = findOrCreteMember(solvedRegisterRequest.bojId().trim());
         Problem problem = getProblem(solvedRegisterRequest);
 
         Solved solved = Solved.submit(solvedRegisterRequest.solveTimeSeconds(), solvedMember, problem);
@@ -36,7 +36,9 @@ public class SolvedService implements SolvedRegister {
 
     private Problem getProblem(SolvedRegisterRequest solvedRegisterRequest) {
         return problemRepository.findByBojProblemId(solvedRegisterRequest.bojProblemId())
-                .orElseThrow(() -> new NotFoundEntityException("백준 문제 번호: " + solvedRegisterRequest.bojProblemId() + " 에 해당하는 문제가 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundEntityException(
+                        "백준 문제 번호: " + solvedRegisterRequest.bojProblemId() + " 에 해당하는 문제가 존재하지 않습니다.")
+                );
     }
 
     private Member findOrCreteMember(String bojId) {
