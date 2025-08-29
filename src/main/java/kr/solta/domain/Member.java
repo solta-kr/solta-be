@@ -1,5 +1,7 @@
 package kr.solta.domain;
 
+import static java.util.Objects.requireNonNull;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -12,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member extends BaseEntity{
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +26,7 @@ public class Member extends BaseEntity{
     public static Member create(String bojId) {
         Member member = new Member();
 
-        member.bojId = bojId;
+        member.bojId = requireNonNull(bojId);
 
         return member;
     }

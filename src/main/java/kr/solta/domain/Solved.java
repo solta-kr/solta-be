@@ -4,6 +4,8 @@ import static java.util.Objects.requireNonNull;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,16 +27,21 @@ public class Solved extends BaseEntity {
     @Column(nullable = false)
     private int solveTimeSeconds;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SolveType solveType;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Problem problem;
 
-    public static Solved submit(int solveTimeSeconds, Member member, Problem problem) {
+    public static Solved submit(int solveTimeSeconds, SolveType solveType, Member member, Problem problem) {
         Solved solved = new Solved();
 
         solved.solveTimeSeconds = solveTimeSeconds;
+        solved.solveType = solveType;
         solved.member = requireNonNull(member);
         solved.problem = requireNonNull(problem);
 

@@ -29,7 +29,12 @@ public class SolvedService implements SolvedRegister {
         Member solvedMember = findOrCreteMember(solvedRegisterRequest.bojId().trim());
         Problem problem = getProblem(solvedRegisterRequest);
 
-        Solved solved = Solved.submit(solvedRegisterRequest.solveTimeSeconds(), solvedMember, problem);
+        Solved solved = Solved.submit(
+                solvedRegisterRequest.solveTimeSeconds(),
+                solvedRegisterRequest.solveType(),
+                solvedMember,
+                problem
+        );
 
         return solvedRepository.save(solved);
     }

@@ -27,5 +27,6 @@ public class Problem extends BaseEntity {
     private long bojProblemId;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Tier tier;
 }
