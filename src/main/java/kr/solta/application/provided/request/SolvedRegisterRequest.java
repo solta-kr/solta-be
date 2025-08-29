@@ -1,4 +1,4 @@
-package kr.solta.application.provided;
+package kr.solta.application.provided.request;
 
 import jakarta.validation.constraints.NotNull;
 import kr.solta.domain.SolveType;

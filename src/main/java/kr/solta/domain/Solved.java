@@ -37,11 +37,11 @@ public class Solved extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Problem problem;
 
-    public static Solved submit(int solveTimeSeconds, SolveType solveType, Member member, Problem problem) {
+    public static Solved register(int solveTimeSeconds, SolveType solveType, Member member, Problem problem) {
         Solved solved = new Solved();
 
         solved.solveTimeSeconds = solveTimeSeconds;
-        solved.solveType = solveType;
+        solved.solveType = requireNonNull(solveType);
         solved.member = requireNonNull(member);
         solved.problem = requireNonNull(problem);
 
