@@ -9,12 +9,12 @@ import kr.solta.application.provided.request.SolvedRegisterRequest;
 import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.ProblemRepository;
 import kr.solta.application.required.SolvedRepository;
-import kr.solta.application.required.dto.TierGroupSolveStats;
+import kr.solta.application.required.dto.SolvedStats;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.Solved;
 import kr.solta.domain.SolvedAverage;
-import kr.solta.domain.Tier;
+import kr.solta.domain.TierAverage;
 import kr.solta.domain.TierGroup;
 import kr.solta.domain.TierGroupAverage;
 import lombok.RequiredArgsConstructor;
@@ -68,16 +68,24 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
 
         List<TierGroupAverage> tierGroupAverages = new ArrayList<>();
         for (TierGroup tierGroup : TierGroup.values()) {
-            TierGroupSolveStats tierGroupSolveStats = solvedRepository.calculateTierGroupAverageByMember(
+            SolvedStats solvedStats = solvedRepository.calculateTierGroupAverageByMember(
                     member,
-                    Tier.getByGroup(tierGroup)
+                    tierGroup.getTiers()
             );
             tierGroupAverages.add(
-                    new TierGroupAverage(tierGroup, tierGroupSolveStats.average(), tierGroupSolveStats.count())
+                    new TierGroupAverage(tierGroup, solvedStats.average(), solvedStats.count())
             );
         }
-        
+
         return tierGroupAverages;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<TierAverage> findTierAverages(final String bojId) {
+        Member member = getMember(bojId);
+
+        return solvedRepository.findTierAverageByMember(member);
     }
 
     private Problem getProblem(SolvedRegisterRequest solvedRegisterRequest) {
