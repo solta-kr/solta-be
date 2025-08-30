@@ -1,6 +1,7 @@
 package kr.solta.application.required;
 
 import java.util.List;
+import kr.solta.application.required.dto.TierGroupSolveStats;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.Solved;
@@ -24,9 +25,9 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     List<SolvedAverage> findSolvedAveragesByProblems(List<Problem> problems);
 
     @Query("""
-                select avg(s.solveTimeSeconds)
+                select new kr.solta.application.required.dto.TierGroupSolveStats(count(s.id), avg(s.solveTimeSeconds))
                 from Solved s
                 where s.member = :member and s.problem.tier in :tiers
             """)
-    Double calculateTierGroupAverageByMember(Member member, List<Tier> tiers);
+    TierGroupSolveStats calculateTierGroupAverageByMember(Member member, List<Tier> tiers);
 }

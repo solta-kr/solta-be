@@ -1,6 +1,6 @@
 package kr.solta.application;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import kr.solta.application.exception.NotFoundEntityException;
 import kr.solta.application.provided.SolvedFinder;
@@ -9,6 +9,7 @@ import kr.solta.application.provided.request.SolvedRegisterRequest;
 import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.ProblemRepository;
 import kr.solta.application.required.SolvedRepository;
+import kr.solta.application.required.dto.TierGroupSolveStats;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.Solved;
@@ -65,15 +66,18 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
     public List<TierGroupAverage> findTierGroupAverages(final String bojId) {
         Member member = getMember(bojId);
 
-        return Arrays.stream(TierGroup.values())
-                .map(tierGroup -> new TierGroupAverage(
-                        tierGroup,
-                        solvedRepository.calculateTierGroupAverageByMember(
-                                member,
-                                Tier.getByGroup(tierGroup)
-                        )
-                ))
-                .toList();
+        List<TierGroupAverage> tierGroupAverages = new ArrayList<>();
+        for (TierGroup tierGroup : TierGroup.values()) {
+            TierGroupSolveStats tierGroupSolveStats = solvedRepository.calculateTierGroupAverageByMember(
+                    member,
+                    Tier.getByGroup(tierGroup)
+            );
+            tierGroupAverages.add(
+                    new TierGroupAverage(tierGroup, tierGroupSolveStats.average(), tierGroupSolveStats.count())
+            );
+        }
+        
+        return tierGroupAverages;
     }
 
     private Problem getProblem(SolvedRegisterRequest solvedRegisterRequest) {
