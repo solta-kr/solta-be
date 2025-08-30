@@ -1,5 +1,6 @@
 package kr.solta.application;
 
+import java.util.Arrays;
 import java.util.List;
 import kr.solta.application.exception.NotFoundEntityException;
 import kr.solta.application.provided.SolvedFinder;
@@ -12,6 +13,9 @@ import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.Solved;
 import kr.solta.domain.SolvedAverage;
+import kr.solta.domain.Tier;
+import kr.solta.domain.TierGroup;
+import kr.solta.domain.TierGroupAverage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +58,22 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
     @Override
     public List<SolvedAverage> findSolvedAverages(List<Problem> problems) {
         return solvedRepository.findSolvedAveragesByProblems(problems);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<TierGroupAverage> findTierGroupAverages(final String bojId) {
+        Member member = getMember(bojId);
+
+        return Arrays.stream(TierGroup.values())
+                .map(tierGroup -> new TierGroupAverage(
+                        tierGroup,
+                        solvedRepository.calculateTierGroupAverageByMember(
+                                member,
+                                Tier.getByGroup(tierGroup)
+                        )
+                ))
+                .toList();
     }
 
     private Problem getProblem(SolvedRegisterRequest solvedRegisterRequest) {

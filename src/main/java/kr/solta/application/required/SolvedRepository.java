@@ -5,6 +5,7 @@ import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.Solved;
 import kr.solta.domain.SolvedAverage;
+import kr.solta.domain.Tier;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,4 +22,11 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 group by s.problem.id
             """)
     List<SolvedAverage> findSolvedAveragesByProblems(List<Problem> problems);
+
+    @Query("""
+                select avg(s.solveTimeSeconds)
+                from Solved s
+                where s.member = :member and s.problem.tier in :tiers
+            """)
+    Double calculateTierGroupAverageByMember(Member member, List<Tier> tiers);
 }

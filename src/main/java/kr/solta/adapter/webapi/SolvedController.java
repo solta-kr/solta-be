@@ -12,6 +12,7 @@ import kr.solta.application.provided.request.SolvedRegisterRequest;
 import kr.solta.domain.Problem;
 import kr.solta.domain.Solved;
 import kr.solta.domain.SolvedAverage;
+import kr.solta.domain.TierGroupAverage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,7 +40,7 @@ public class SolvedController {
     }
 
     @GetMapping("/members/{bojId}/solveds")
-    public List<SolvedWithAverageResponse> findSolvedWithAverages(
+    public ResponseEntity<List<SolvedWithAverageResponse>> findSolvedWithAverages(
             @PathVariable String bojId
     ) {
         List<Solved> solveds = solvedFinder.findSolveds(bojId);
@@ -56,11 +57,22 @@ public class SolvedController {
                         SolvedAverage::averageSolvedSeconds)
                 );
 
-        return solveds.stream()
+        List<SolvedWithAverageResponse> responses = solveds.stream()
                 .map(solved -> SolvedWithAverageResponse.of(
                         solved,
                         avgMap.getOrDefault(solved.getProblem().getId(), 0.0)
                 ))
                 .toList();
+
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/members/{bojId}/solveds/tier-group/average-time")
+    public ResponseEntity<List<TierGroupAverage>> findTierGroupAverageTime(
+            @PathVariable String bojId
+    ) {
+        List<TierGroupAverage> tierGroupAverages = solvedFinder.findTierGroupAverages(bojId);
+
+        return ResponseEntity.ok(tierGroupAverages);
     }
 }
