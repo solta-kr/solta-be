@@ -21,6 +21,7 @@ import kr.solta.domain.Solved;
 import kr.solta.domain.SolvedAverage;
 import kr.solta.domain.Tag;
 import kr.solta.domain.TierAverage;
+import kr.solta.domain.TierAverages;
 import kr.solta.domain.TierGroup;
 import kr.solta.domain.TierGroupAverage;
 import lombok.RequiredArgsConstructor;
@@ -89,10 +90,12 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
 
     @Transactional(readOnly = true)
     @Override
-    public List<TierAverage> findTierAverages(final String bojId) {
+    public Map<TierGroup, List<TierAverage>> findTierAverages(final String bojId) {
         Member member = getMemberByBojId(bojId);
 
-        return solvedRepository.findTierAverageByMember(member);
+        TierAverages tierAverages = new TierAverages(solvedRepository.findTierAverageByMember(member));
+
+        return tierAverages.toTierGroupAverageMap();
     }
 
     @Transactional(readOnly = true)

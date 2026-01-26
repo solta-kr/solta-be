@@ -5,4 +5,8 @@ public record TierAverage(
         Double averageSolvedSeconds,
         long solvedCount
 ) {
+
+    public static TierAverage none(Tier tier) {
+        return new TierAverage(tier, null, 0);
+    }
 }

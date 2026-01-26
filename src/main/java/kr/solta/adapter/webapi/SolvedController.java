@@ -1,10 +1,8 @@
 package kr.solta.adapter.webapi;
 
 import jakarta.validation.Valid;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import kr.solta.adapter.webapi.response.RecentSolvedResponse;
 import kr.solta.adapter.webapi.response.SolvedRegisterResponse;
 import kr.solta.application.provided.SolvedFinder;
@@ -12,7 +10,6 @@ import kr.solta.application.provided.SolvedRegister;
 import kr.solta.application.provided.request.SolvedRegisterRequest;
 import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.domain.Solved;
-import kr.solta.domain.Tier;
 import kr.solta.domain.TierAverage;
 import kr.solta.domain.TierGroup;
 import kr.solta.domain.TierGroupAverage;
@@ -68,21 +65,8 @@ public class SolvedController {
     public ResponseEntity<Map<TierGroup, List<TierAverage>>> findTierAverageTime(
             @PathVariable String bojId
     ) {
-        Map<Tier, TierAverage> tierAverages = solvedFinder.findTierAverages(bojId)
-                .stream()
-                .collect(Collectors.toMap(
-                        TierAverage::tier,
-                        t -> t
-                ));
+        Map<TierGroup, List<TierAverage>> response = solvedFinder.findTierAverages(bojId);
 
-        Map<TierGroup, List<TierAverage>> responses = Arrays.stream(TierGroup.values())
-                .collect(Collectors.toMap(
-                        tg -> tg,
-                        tg -> tg.getTiers().stream()
-                                .map(t -> tierAverages.getOrDefault(t, new TierAverage(t, null, 0)))
-                                .toList()
-                ));
-
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(response);
     }
 }
