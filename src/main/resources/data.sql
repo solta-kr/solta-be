@@ -1,3 +1,5 @@
+use solta;
+
 INSERT INTO tag (id, tag_key, kor_name)
 VALUES (1, 'math', '수학'),
        (2, 'implementation', '구현'),
