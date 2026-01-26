@@ -2,18 +2,24 @@ package kr.solta.application;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import kr.solta.application.exception.NotFoundEntityException;
 import kr.solta.application.provided.SolvedFinder;
 import kr.solta.application.provided.SolvedRegister;
 import kr.solta.application.provided.request.SolvedRegisterRequest;
+import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.ProblemRepository;
+import kr.solta.application.required.ProblemTagRepository;
 import kr.solta.application.required.SolvedRepository;
 import kr.solta.application.required.dto.SolvedStats;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
+import kr.solta.domain.ProblemTag;
 import kr.solta.domain.Solved;
 import kr.solta.domain.SolvedAverage;
+import kr.solta.domain.Tag;
 import kr.solta.domain.TierAverage;
 import kr.solta.domain.TierGroup;
 import kr.solta.domain.TierGroupAverage;
@@ -31,6 +37,7 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
     private final MemberRepository memberRepository;
     private final ProblemRepository problemRepository;
     private final SolvedRepository solvedRepository;
+    private final ProblemTagRepository problemTagRepository;
 
     @Override
     public Solved register(SolvedRegisterRequest solvedRegisterRequest) {
@@ -50,7 +57,7 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
     @Transactional(readOnly = true)
     @Override
     public List<Solved> findSolveds(String bojId) {
-        Member member = getMember(bojId);
+        Member member = getMemberByBojId(bojId);
 
         return solvedRepository.findByMemberOrderByCreatedAtDesc(member);
     }
@@ -64,7 +71,7 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
     @Transactional(readOnly = true)
     @Override
     public List<TierGroupAverage> findTierGroupAverages(final String bojId) {
-        Member member = getMember(bojId);
+        Member member = getMemberByBojId(bojId);
 
         List<TierGroupAverage> tierGroupAverages = new ArrayList<>();
         for (TierGroup tierGroup : TierGroup.values()) {
@@ -83,9 +90,25 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
     @Transactional(readOnly = true)
     @Override
     public List<TierAverage> findTierAverages(final String bojId) {
-        Member member = getMember(bojId);
+        Member member = getMemberByBojId(bojId);
 
         return solvedRepository.findTierAverageByMember(member);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<SolvedWithTags> findSolvedWithTags(final String bojId) {
+        Member member = getMemberByBojId(bojId);
+
+        List<Solved> solveds = solvedRepository.findByMemberOrderByCreatedAtDesc(member);
+        List<Problem> problems = solveds.stream()
+                .map(Solved::getProblem)
+                .toList();
+        Map<Problem, List<Tag>> tagsByProblem = getTagsByProblem(problems);
+
+        return solveds.stream()
+                .map(solved -> new SolvedWithTags(solved, tagsByProblem.get(solved.getProblem())))
+                .toList();
     }
 
     private Problem getProblem(SolvedRegisterRequest solvedRegisterRequest) {
@@ -100,8 +123,18 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
                 .orElseGet(() -> memberRepository.save(Member.create(bojId)));
     }
 
-    private Member getMember(String bojId) {
+    private Member getMemberByBojId(String bojId) {
         return memberRepository.findByBojId(bojId)
                 .orElseThrow(() -> new NotFoundEntityException("등록되지 않은 백준 ID입니다."));
+    }
+
+    private Map<Problem, List<Tag>> getTagsByProblem(final List<Problem> problems) {
+        List<ProblemTag> problemTags = problemTagRepository.findByProblemsWithTag(problems);
+
+        return problemTags.stream()
+                .collect(Collectors.groupingBy(
+                        ProblemTag::getProblem,
+                        Collectors.mapping(ProblemTag::getTag, Collectors.toList())
+                ));
     }
 }

@@ -1,6 +1,7 @@
 package kr.solta.application.provided;
 
 import java.util.List;
+import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.domain.Problem;
 import kr.solta.domain.Solved;
 import kr.solta.domain.SolvedAverage;
@@ -16,4 +17,6 @@ public interface SolvedFinder {
     List<TierGroupAverage> findTierGroupAverages(String bojId);
 
     List<TierAverage> findTierAverages(String bojId);
+
+    List<SolvedWithTags> findSolvedWithTags(String bojId);
 }
