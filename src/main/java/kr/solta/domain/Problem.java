@@ -29,4 +29,10 @@ public class Problem extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Tier tier;
+
+    public Problem(final String title, final long bojProblemId, final Tier tier) {
+        this.title = title;
+        this.bojProblemId = bojProblemId;
+        this.tier = tier;
+    }
 }

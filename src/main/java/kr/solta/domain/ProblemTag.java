@@ -24,4 +24,9 @@ public class ProblemTag {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Tag tag;
+
+    public ProblemTag(final Problem problem, final Tag tag) {
+        this.problem = problem;
+        this.tag = tag;
+    }
 }

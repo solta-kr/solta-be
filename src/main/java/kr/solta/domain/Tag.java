@@ -20,4 +20,10 @@ public class Tag extends BaseEntity {
 
     @Column(nullable = false)
     private String korName;
+
+    public Tag(final int id, final String key, final String korName) {
+        this.id = id;
+        this.key = key;
+        this.korName = korName;
+    }
 }
