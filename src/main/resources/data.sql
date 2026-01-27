@@ -233,14 +233,14 @@ VALUES (1, 'math', '수학'),
 
 -- CSV 로드 (컨테이너 안 경로 기준)
 
-LOAD DATA INFILE '/var/lib/mysql-files/problem.csv'
+LOAD DATA LOCAL INFILE '/Users/leejaehoon/Documents/sideprojects/solta/server/src/main/resources/csv/problem.csv'
     INTO TABLE problem
     FIELDS TERMINATED BY ','
     ENCLOSED BY '"'
     LINES TERMINATED BY '\n'
     (id, title, boj_problem_id, tier);
 
-LOAD DATA INFILE '/var/lib/mysql-files/problem_tag.csv'
+LOAD DATA LOCAL INFILE '/Users/leejaehoon/Documents/sideprojects/solta/server/src/main/resources/csv/problem_tag.csv'
     INTO TABLE problem_tag
     FIELDS TERMINATED BY ','
     LINES TERMINATED BY '\n'
@@ -248,8 +248,10 @@ LOAD DATA INFILE '/var/lib/mysql-files/problem_tag.csv'
 
 UPDATE problem
 SET created_at = NOW(),
-    updated_at = NOW();
+    updated_at = NOW()
+WHERE 1 = 1;
 
 UPDATE tag
 SET created_at = NOW(),
-    updated_at = NOW();
+    updated_at = NOW()
+WHERE 1 = 1;

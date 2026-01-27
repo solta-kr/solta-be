@@ -3,13 +3,17 @@ spring:
   config:
     import:
       - db.yml
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/solta?allowLoadLocalInfile=true
+    username: root
+    password: ${db.local.password}
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ahmadda?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: solta
-    password: ${db.local.password}
+      ddl-auto: create
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
 
