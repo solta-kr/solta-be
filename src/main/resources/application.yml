@@ -3,6 +3,10 @@ spring:
   config:
     import:
       - db.yml
+      - oauth.yml
+      - security.yml
+      - client.yml
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/solta?allowLoadLocalInfile=true
@@ -17,3 +21,19 @@ spring:
     init:
       mode: always
 
+oauth:
+  github:
+    loginUrl: https://github.com/login/oauth/authorize?client_id=${oauth.github.local.clientId}&redirect_uri=${oauth.github.local.redirectUrl}
+    clientId: ${oauth.github.local.clientId}
+    clientSecret: ${oauth.github.local.clientSecret}
+    redirectUrl: ${oauth.github.local.redirectUrl}
+    clientSuccessUrl: ${oauth.github.local.clientSuccessUrl}
+
+security:
+  jwt:
+    secret-key: ${security.jwt.local.secret-key}
+    expire-duration: 14d
+
+client:
+  extension-id: ${client.local.extension-id}
+  web-url: ${client.local.web-url}

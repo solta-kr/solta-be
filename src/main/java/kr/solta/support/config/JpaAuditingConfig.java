@@ -1,4 +1,4 @@
-package kr.solta.domain.config;
+package kr.solta.support.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

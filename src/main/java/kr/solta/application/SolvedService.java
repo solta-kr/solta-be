@@ -18,7 +18,6 @@ import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.ProblemTag;
 import kr.solta.domain.Solved;
-import kr.solta.domain.SolvedAverage;
 import kr.solta.domain.Tag;
 import kr.solta.domain.TierAverage;
 import kr.solta.domain.TierAverages;
@@ -42,7 +41,7 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
 
     @Override
     public Solved register(SolvedRegisterRequest solvedRegisterRequest) {
-        Member solvedMember = findOrCreteMember(solvedRegisterRequest.bojId().trim());
+        Member solvedMember = getMemberByBojId(solvedRegisterRequest.bojId().trim());
         Problem problem = getProblem(solvedRegisterRequest);
 
         Solved solved = Solved.register(
@@ -53,20 +52,6 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
         );
 
         return solvedRepository.save(solved);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<Solved> findSolveds(String bojId) {
-        Member member = getMemberByBojId(bojId);
-
-        return solvedRepository.findByMemberOrderByCreatedAtDesc(member);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<SolvedAverage> findSolvedAverages(List<Problem> problems) {
-        return solvedRepository.findSolvedAveragesByProblems(problems);
     }
 
     @Transactional(readOnly = true)
@@ -119,11 +104,6 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
                 .orElseThrow(() -> new NotFoundEntityException(
                         "백준 문제 번호: " + solvedRegisterRequest.bojProblemId() + " 에 해당하는 문제가 존재하지 않습니다.")
                 );
-    }
-
-    private Member findOrCreteMember(String bojId) {
-        return memberRepository.findByBojId(bojId)
-                .orElseGet(() -> memberRepository.save(Member.create(bojId)));
     }
 
     private Member getMemberByBojId(String bojId) {

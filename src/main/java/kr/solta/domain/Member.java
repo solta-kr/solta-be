@@ -21,12 +21,19 @@ public class Member extends BaseEntity {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    private String name;
+
+    @Column(nullable = false, unique = true)
+    private Long githubId;
+
+    @Column(unique = true)
     private String bojId;
 
-    public static Member create(String bojId) {
+    public static Member create(final Long githubId, final String name) {
         Member member = new Member();
 
-        member.bojId = requireNonNull(bojId);
+        member.name = requireNonNull(name);
+        member.githubId = requireNonNull(githubId);
 
         return member;
     }

@@ -53,9 +53,7 @@ public class SolvedController {
     }
 
     @GetMapping("/members/{bojId}/solveds/tier-group/average-time")
-    public ResponseEntity<List<TierGroupAverage>> findTierGroupAverageTime(
-            @PathVariable String bojId
-    ) {
+    public ResponseEntity<List<TierGroupAverage>> findTierGroupAverageTime(@PathVariable String bojId) {
         List<TierGroupAverage> tierGroupAverages = solvedFinder.findTierGroupAverages(bojId);
 
         return ResponseEntity.ok(tierGroupAverages);
