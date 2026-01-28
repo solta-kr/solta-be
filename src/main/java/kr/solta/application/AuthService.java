@@ -30,7 +30,13 @@ public class AuthService {
     private Member findOrCreteMember(final GithubUserResponse githubUserResponse) {
         return memberRepository.findByGithubId(githubUserResponse.id())
                 .orElseGet(
-                        () -> memberRepository.save(Member.create(githubUserResponse.id(), githubUserResponse.name()))
+                        () -> memberRepository.save(
+                                Member.create(
+                                        githubUserResponse.id(),
+                                        githubUserResponse.login(),
+                                        githubUserResponse.avatarUrl()
+                                )
+                        )
                 );
     }
 }

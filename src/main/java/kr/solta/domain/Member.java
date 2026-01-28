@@ -29,11 +29,15 @@ public class Member extends BaseEntity {
     @Column(unique = true)
     private String bojId;
 
-    public static Member create(final Long githubId, final String name) {
+    @Column(nullable = false)
+    private String avatarUrl;
+
+    public static Member create(final Long githubId, final String name, final String avatarUrl) {
         Member member = new Member();
 
         member.name = requireNonNull(name);
         member.githubId = requireNonNull(githubId);
+        member.avatarUrl = requireNonNull(avatarUrl);
 
         return member;
     }
