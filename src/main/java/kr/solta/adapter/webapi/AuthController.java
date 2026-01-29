@@ -9,7 +9,7 @@ import kr.solta.adapter.github.GithubProperties;
 import kr.solta.adapter.webapi.properties.ClientProperties;
 import kr.solta.adapter.webapi.request.Client;
 import kr.solta.adapter.webapi.response.OauthLoginUrlResponse;
-import kr.solta.application.AuthService;
+import kr.solta.application.provided.AuthTokenCreator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthTokenCreator authTokenCreator;
     private final GithubProperties githubProperties;
     private final ClientProperties clientProperties;
 
@@ -39,7 +39,7 @@ public class AuthController {
             @RequestParam final String code,
             @RequestParam("state") final Client client
     ) throws IOException {
-        String accessToken = authService.createAuthToken(code);
+        String accessToken = authTokenCreator.createAuthToken(code);
 
         if (client == EXTENSION) {
             String url = "https://" + clientProperties.extensionId() + ".chromiumapp.org?token=" + accessToken;

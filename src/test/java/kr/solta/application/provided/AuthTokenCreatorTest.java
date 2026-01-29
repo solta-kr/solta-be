@@ -1,4 +1,4 @@
-package kr.solta.application;
+package kr.solta.application.provided;
 
 import static kr.solta.support.FakeGithubClient.FAKE_AVATAR_URL;
 import static kr.solta.support.FakeGithubClient.FAKE_GITHUB_ID;
@@ -14,10 +14,10 @@ import kr.solta.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class AuthServiceTest extends IntegrationTest {
+class AuthTokenCreatorTest extends IntegrationTest {
 
     @Autowired
-    private AuthService authService;
+    private AuthTokenCreator authTokenCreator;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -31,7 +31,7 @@ class AuthServiceTest extends IntegrationTest {
         String code = "github-auth-code";
 
         //when
-        String token = authService.createAuthToken(code);
+        String token = authTokenCreator.createAuthToken(code);
 
         //then
         assertThat(token).isNotNull();
@@ -44,7 +44,7 @@ class AuthServiceTest extends IntegrationTest {
         long initialMemberCount = memberRepository.count();
 
         //when
-        String authToken = authService.createAuthToken(code);
+        String authToken = authTokenCreator.createAuthToken(code);
 
         //then
         assertSoftly(softly -> {
@@ -63,7 +63,7 @@ class AuthServiceTest extends IntegrationTest {
         long initialMemberCount = memberRepository.count();
 
         //when
-        authService.createAuthToken(code);
+        authTokenCreator.createAuthToken(code);
 
         //then
         assertThat(memberRepository.count()).isEqualTo(initialMemberCount);

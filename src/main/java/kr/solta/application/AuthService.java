@@ -1,5 +1,6 @@
 package kr.solta.application;
 
+import kr.solta.application.provided.AuthTokenCreator;
 import kr.solta.application.required.GithubClient;
 import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.TokenProvider;
@@ -12,12 +13,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AuthService {
+public class AuthService implements AuthTokenCreator {
 
     private final GithubClient githubClient;
     private final TokenProvider tokenProvider;
     private final MemberRepository memberRepository;
 
+    @Override
     public String createAuthToken(final String code) {
         GithubTokenResponse githubTokenResponse = githubClient.getAccessToken(code);
         GithubUserResponse githubClientUserInfo = githubClient.getUserInfo(githubTokenResponse.accessToken());
