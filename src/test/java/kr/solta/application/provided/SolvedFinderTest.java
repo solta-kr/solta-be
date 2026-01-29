@@ -1,8 +1,14 @@
 package kr.solta.application.provided;
 
+import static kr.solta.support.TestFixtures.createMember;
+import static kr.solta.support.TestFixtures.createSolved;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.List;
+import java.util.Map;
 import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.ProblemRepository;
@@ -16,6 +22,9 @@ import kr.solta.domain.SolveType;
 import kr.solta.domain.Solved;
 import kr.solta.domain.Tag;
 import kr.solta.domain.Tier;
+import kr.solta.domain.TierAverage;
+import kr.solta.domain.TierGroup;
+import kr.solta.domain.TierGroupAverage;
 import kr.solta.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +52,7 @@ class SolvedFinderTest extends IntegrationTest {
     @Test
     void 사용자가_푼_풀이를_문제_태그와_함께_조회할_수_있다() {
         //given
-        Member member = memberRepository.save(Member.create(1L, "abc5259", "url"));
+        Member member = memberRepository.save(createMember());
 
         Problem problem1 = createProblem("문제1", 1000L, Tier.B1);
         Problem problem2 = createProblem("문제2", 1001L, Tier.S3);
@@ -69,6 +78,105 @@ class SolvedFinderTest extends IntegrationTest {
                         new SolvedWithTags(solved2, List.of(tag2, tag3)),
                         new SolvedWithTags(solved1, List.of(tag1, tag2))
                 );
+    }
+
+    @Test
+    void TierGroup별_평균_풀이_시간을_조회할_수_있다() {
+        //given
+        Member member = memberRepository.save(createMember(1L, "testUser"));
+
+        Problem bronzeProblem1 = problemRepository.save(createProblem("브론즈1", 1000L, Tier.B1));
+        Problem bronzeProblem2 = problemRepository.save(createProblem("브론즈2", 1001L, Tier.B3));
+        Problem silverProblem = problemRepository.save(createProblem("실버1", 1002L, Tier.S2));
+        Problem goldProblem = problemRepository.save(createProblem("골드1", 1003L, Tier.G1));
+
+        solvedRepository.save(createSolved(3600, SolveType.SELF, member, bronzeProblem1));
+        solvedRepository.save(createSolved(1800, SolveType.SELF, member, bronzeProblem2));
+        solvedRepository.save(createSolved(5400, SolveType.SELF, member, silverProblem));
+        solvedRepository.save(createSolved(7200, SolveType.SELF, member, goldProblem));
+
+        //when
+        List<TierGroupAverage> result = solvedFinder.findTierGroupAverages(member.getName());
+
+        //then
+        assertThat(result).hasSize(7)
+                .extracting(TierGroupAverage::tierGroup, TierGroupAverage::averageSolvedSeconds,
+                        TierGroupAverage::solvedCount)
+                .containsExactly(
+                        tuple(TierGroup.UNRATED, null, 0L),
+                        tuple(TierGroup.BRONZE, 2700.0, 2L),
+                        tuple(TierGroup.SILVER, 5400.0, 1L),
+                        tuple(TierGroup.GOLD, 7200.0, 1L),
+                        tuple(TierGroup.PLATINUM, null, 0L),
+                        tuple(TierGroup.DIAMOND, null, 0L),
+                        tuple(TierGroup.RUBY, null, 0L)
+                );
+    }
+
+    @Test
+    void TierGroup별_평균_풀이_시간_조회시_존재하지_않는_사용자면_예외가_발생한다() {
+        //given
+        String notExistMemberName = "notExistUser";
+
+        //when & then
+        assertThatThrownBy(() -> solvedFinder.findTierGroupAverages(notExistMemberName))
+                .isInstanceOf(Exception.class)
+                .hasMessageContaining("존재하지 않는 사용자입니다");
+    }
+
+    @Test
+    void Tier별_평균_풀이_시간을_TierGroup으로_그룹화하여_조회할_수_있다() {
+        //given
+        Member member = memberRepository.save(createMember(1L, "testUser"));
+
+        Problem bronzeProblem1 = problemRepository.save(createProblem("브론즈1", 1000L, Tier.B1));
+        Problem bronzeProblem3 = problemRepository.save(createProblem("브론즈3", 1001L, Tier.B3));
+        Problem silverProblem2 = problemRepository.save(createProblem("실버2", 1002L, Tier.S2));
+        Problem goldProblem1 = problemRepository.save(createProblem("골드1", 1003L, Tier.G1));
+        Problem goldProblem3 = problemRepository.save(createProblem("골드3", 1004L, Tier.G3));
+
+        solvedRepository.save(createSolved(3600, SolveType.SELF, member, bronzeProblem1));
+        solvedRepository.save(createSolved(1800, SolveType.SELF, member, bronzeProblem3));
+        solvedRepository.save(createSolved(5400, SolveType.SELF, member, silverProblem2));
+        solvedRepository.save(createSolved(7200, SolveType.SELF, member, goldProblem1));
+        solvedRepository.save(createSolved(4800, SolveType.SELF, member, goldProblem3));
+
+        //when
+        Map<TierGroup, List<TierAverage>> result = solvedFinder.findTierAverages(member.getName());
+
+        //then
+        assertSoftly(softly -> {
+            softly.assertThat(result).hasSize(7);
+            softly.assertThat(result.get(TierGroup.BRONZE)).hasSize(5)
+                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount)
+                    .containsExactly(
+                            tuple(Tier.B5, null, 0L),
+                            tuple(Tier.B4, null, 0L),
+                            tuple(Tier.B3, 1800.0, 1L),
+                            tuple(Tier.B2, null, 0L),
+                            tuple(Tier.B1, 3600.0, 1L)
+                    );
+            softly.assertThat(result.get(TierGroup.GOLD)).hasSize(5)
+                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount)
+                    .containsExactly(
+                            tuple(Tier.G5, null, 0L),
+                            tuple(Tier.G4, null, 0L),
+                            tuple(Tier.G3, 4800.0, 1L),
+                            tuple(Tier.G2, null, 0L),
+                            tuple(Tier.G1, 7200.0, 1L)
+                    );
+        });
+    }
+
+    @Test
+    void Tier별_평균_풀이_시간_조회시_존재하지_않는_사용자면_예외가_발생한다() {
+        //given
+        String notExistMemberName = "notExistUser";
+
+        //when & then
+        assertThatThrownBy(() -> solvedFinder.findTierAverages(notExistMemberName))
+                .isInstanceOf(Exception.class)
+                .hasMessageContaining("존재하지 않는 사용자입니다");
     }
 
     private Problem createProblem(String title, long bojProblemId, Tier tier) {
