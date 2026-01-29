@@ -9,4 +9,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByBojId(final String bojId);
 
     Optional<Member> findByGithubId(final Long githubId);
+
+    Optional<Member> findByName(final String name);
 }

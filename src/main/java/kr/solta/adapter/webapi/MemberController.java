@@ -1,9 +1,9 @@
 package kr.solta.adapter.webapi;
 
 import kr.solta.adapter.webapi.resolver.Auth;
-import kr.solta.adapter.webapi.resolver.AuthMember;
 import kr.solta.adapter.webapi.response.MemberResponse;
 import kr.solta.application.MemberService;
+import kr.solta.application.provided.request.AuthMember;
 import kr.solta.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

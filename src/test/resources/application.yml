@@ -14,3 +14,20 @@ spring:
   sql:
     init:
       mode: never
+
+oauth:
+  github:
+    loginUrl: testUrl
+    clientId: testClientId
+    clientSecret: testClientSecret
+    redirectUrl: testRedirectUrl
+    clientSuccessUrl: testClientSuccessUrl
+
+security:
+  jwt:
+    secret-key: test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test
+    expire-duration: 14d
+
+client:
+  extension-id: testExtensionId
+  web-url: testWebUrl

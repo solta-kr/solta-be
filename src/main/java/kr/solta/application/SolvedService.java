@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import kr.solta.application.exception.NotFoundEntityException;
 import kr.solta.application.provided.SolvedFinder;
 import kr.solta.application.provided.SolvedRegister;
+import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.request.SolvedRegisterRequest;
 import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.application.required.MemberRepository;
@@ -40,8 +41,8 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
     private final ProblemTagRepository problemTagRepository;
 
     @Override
-    public Solved register(SolvedRegisterRequest solvedRegisterRequest) {
-        Member solvedMember = getMemberByBojId(solvedRegisterRequest.bojId().trim());
+    public Solved register(final AuthMember authMember, final SolvedRegisterRequest solvedRegisterRequest) {
+        Member solvedMember = getMemberById(authMember.memberId());
         Problem problem = getProblem(solvedRegisterRequest);
 
         Solved solved = Solved.register(
@@ -56,8 +57,8 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
 
     @Transactional(readOnly = true)
     @Override
-    public List<TierGroupAverage> findTierGroupAverages(final String bojId) {
-        Member member = getMemberByBojId(bojId);
+    public List<TierGroupAverage> findTierGroupAverages(final String name) {
+        Member member = getMemberByName(name);
 
         List<TierGroupAverage> tierGroupAverages = new ArrayList<>();
         for (TierGroup tierGroup : TierGroup.values()) {
@@ -75,8 +76,8 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
 
     @Transactional(readOnly = true)
     @Override
-    public Map<TierGroup, List<TierAverage>> findTierAverages(final String bojId) {
-        Member member = getMemberByBojId(bojId);
+    public Map<TierGroup, List<TierAverage>> findTierAverages(final String name) {
+        Member member = getMemberByName(name);
 
         TierAverages tierAverages = new TierAverages(solvedRepository.findTierAverageByMember(member));
 
@@ -85,8 +86,8 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
 
     @Transactional(readOnly = true)
     @Override
-    public List<SolvedWithTags> findSolvedWithTags(final String bojId) {
-        Member member = getMemberByBojId(bojId);
+    public List<SolvedWithTags> findSolvedWithTags(final String name) {
+        Member member = getMemberByName(name);
 
         List<Solved> solveds = solvedRepository.findByMemberOrderByCreatedAtDesc(member);
         List<Problem> problems = solveds.stream()
@@ -106,9 +107,14 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
                 );
     }
 
-    private Member getMemberByBojId(String bojId) {
-        return memberRepository.findByBojId(bojId)
-                .orElseThrow(() -> new NotFoundEntityException("등록되지 않은 백준 ID입니다."));
+    private Member getMemberById(final Long id) {
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new NotFoundEntityException("존재하지 않는 사용자입니다."));
+    }
+
+    private Member getMemberByName(final String name) {
+        return memberRepository.findByName(name)
+                .orElseThrow(() -> new NotFoundEntityException("존재하지 않는 사용자입니다."));
     }
 
     private Map<Problem, List<Tag>> getTagsByProblem(final List<Problem> problems) {

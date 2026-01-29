@@ -43,8 +43,7 @@ class SolvedFinderTest extends IntegrationTest {
     @Test
     void 사용자가_푼_풀이를_문제_태그와_함께_조회할_수_있다() {
         //given
-        String bojId = "testUser";
-        Member member = memberRepository.save(Member.create(bojId));
+        Member member = memberRepository.save(Member.create(1L, "abc5259", "url"));
 
         Problem problem1 = createProblem("문제1", 1000L, Tier.B1);
         Problem problem2 = createProblem("문제2", 1001L, Tier.S3);
@@ -62,7 +61,7 @@ class SolvedFinderTest extends IntegrationTest {
         Solved solved2 = solvedRepository.save(Solved.register(1800, SolveType.SOLUTION, member, problem2));
 
         //when
-        List<SolvedWithTags> result = solvedFinder.findSolvedWithTags(bojId);
+        List<SolvedWithTags> result = solvedFinder.findSolvedWithTags(member.getName());
 
         //then
         assertThat(result).hasSize(2)

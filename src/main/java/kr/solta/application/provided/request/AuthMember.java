@@ -1,4 +1,4 @@
-package kr.solta.adapter.webapi.resolver;
+package kr.solta.application.provided.request;
 
 public record AuthMember(
         Long memberId

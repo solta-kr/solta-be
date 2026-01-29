@@ -9,9 +9,9 @@ import kr.solta.domain.TierGroupAverage;
 
 public interface SolvedFinder {
 
-    List<TierGroupAverage> findTierGroupAverages(String bojId);
+    List<TierGroupAverage> findTierGroupAverages(String name);
 
-    Map<TierGroup, List<TierAverage>> findTierAverages(String bojId);
+    Map<TierGroup, List<TierAverage>> findTierAverages(String name);
 
-    List<SolvedWithTags> findSolvedWithTags(String bojId);
+    List<SolvedWithTags> findSolvedWithTags(String name);
 }

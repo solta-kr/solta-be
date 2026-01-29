@@ -1,6 +1,7 @@
 package kr.solta.adapter.webapi.resolver;
 
 import jakarta.servlet.http.HttpServletRequest;
+import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.required.TokenProvider;
 import kr.solta.application.required.dto.TokenPayload;
 import lombok.RequiredArgsConstructor;
