@@ -36,6 +36,7 @@ import lombok.Getter;
 
 @Getter
 public enum TierGroup {
+    NONE(List.of()),
     UNRATED(List.of()),
     BRONZE(List.of(B5, B4, B3, B2, B1)),
     SILVER(List.of(S5, S4, S3, S2, S1)),
@@ -47,7 +48,11 @@ public enum TierGroup {
 
     private final List<Tier> tiers;
 
-    TierGroup(List<Tier> tiers) {
+    TierGroup(final List<Tier> tiers) {
         this.tiers = tiers;
+    }
+
+    public boolean isNone() {
+        return this == NONE;
     }
 }

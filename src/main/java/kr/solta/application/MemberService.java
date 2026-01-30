@@ -1,11 +1,19 @@
 package kr.solta.application;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import kr.solta.application.provided.MemberReader;
 import kr.solta.application.provided.response.MemberProfileResponse;
+import kr.solta.application.provided.response.SolveTimeTrendsResponse;
+import kr.solta.application.provided.response.TrendPoint;
 import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.SolvedRepository;
 import kr.solta.application.required.dto.AllSolvedAverage;
+import kr.solta.application.required.dto.TrendData;
 import kr.solta.domain.Member;
+import kr.solta.domain.SolvedPeriod;
+import kr.solta.domain.Tier;
+import kr.solta.domain.TierGroup;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,8 +41,43 @@ public class MemberService implements MemberReader {
         return MemberProfileResponse.of(member, allSolvedAverage);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public SolveTimeTrendsResponse getSolveTimeTrends(
+            final String name,
+            final SolvedPeriod solvedPeriod,
+            final TierGroup tierGroup
+    ) {
+        Member member = getMemberByName(name);
+        List<Tier> tiers = tierGroup.getTiers();
+
+        List<TrendPoint> trends = getTrendPoints(member, solvedPeriod, tiers);
+        Long totalSolvedCount = tiers.isEmpty()
+                ? solvedRepository.countSolvedByPeriod(member.getId(), solvedPeriod.getStartDate())
+                : solvedRepository.countSolvedByPeriodAndTiers(member.getId(), solvedPeriod.getStartDate(), tiers);
+
+        return SolveTimeTrendsResponse.of(solvedPeriod, tierGroup, totalSolvedCount, trends);
+    }
+
     private Member getMemberByName(final String name) {
         return memberRepository.findByName(name)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다. name: " + name));
+    }
+
+    private List<TrendPoint> getTrendPoints(
+            final Member member,
+            final SolvedPeriod solvedPeriod,
+            final List<Tier> tiers
+    ) {
+        LocalDateTime startDate = solvedPeriod.getStartDate();
+        String dateFormat = solvedPeriod.getAggregationType().getDateFormat();
+
+        List<TrendData> trendData = tiers.isEmpty()
+                ? solvedRepository.findSolveTimeTrendsAll(member.getId(), startDate, dateFormat)
+                : solvedRepository.findSolveTimeTrendsByTiers(member.getId(), startDate, dateFormat, tiers);
+
+        return trendData.stream()
+                .map(data -> new TrendPoint(data.date(), data.averageSeconds(), data.solvedCount()))
+                .toList();
     }
 }
