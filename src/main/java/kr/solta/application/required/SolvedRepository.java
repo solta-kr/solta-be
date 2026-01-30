@@ -1,6 +1,7 @@
 package kr.solta.application.required;
 
 import java.util.List;
+import kr.solta.application.required.dto.AllSolvedAverage;
 import kr.solta.application.required.dto.SolvedStats;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
@@ -39,4 +40,11 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 group by s.problem.tier
             """)
     List<TierAverage> findTierAverageByMember(Member member);
+
+    @Query("""
+                select new kr.solta.application.required.dto.AllSolvedAverage(count(s.id), sum (s.solveTimeSeconds), avg(s.solveTimeSeconds))
+                from Solved s
+                where s.member = :member
+            """)
+    AllSolvedAverage findAllSolvedAverage(Member member);
 }
