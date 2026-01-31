@@ -3,6 +3,7 @@ package kr.solta.adapter.webapi;
 import kr.solta.adapter.webapi.resolver.Auth;
 import kr.solta.adapter.webapi.response.MemberResponse;
 import kr.solta.application.provided.MemberReader;
+import kr.solta.application.provided.SolvedStatisticsReader;
 import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.response.MemberProfileResponse;
 import kr.solta.application.provided.response.SolveTimeTrendsResponse;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberController {
 
     private final MemberReader memberReader;
+    private final SolvedStatisticsReader solvedStatisticsReader;
 
     @GetMapping("/me")
     public ResponseEntity<MemberResponse> getMyInfo(@Auth final AuthMember authMember) {
@@ -44,7 +46,7 @@ public class MemberController {
             @RequestParam("period") final SolvedPeriod solvedPeriod,
             @RequestParam final TierGroup tierGroup
     ) {
-        SolveTimeTrendsResponse response = memberReader.getSolveTimeTrends(name, solvedPeriod, tierGroup);
+        SolveTimeTrendsResponse response = solvedStatisticsReader.getSolveTimeTrends(name, solvedPeriod, tierGroup);
 
         return ResponseEntity.ok(response);
     }

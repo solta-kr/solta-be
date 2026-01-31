@@ -96,7 +96,10 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
         Map<Problem, List<Tag>> tagsByProblem = getTagsByProblem(problems);
 
         return solveds.stream()
-                .map(solved -> new SolvedWithTags(solved, tagsByProblem.get(solved.getProblem())))
+                .map(solved -> new SolvedWithTags(
+                        solved,
+                        tagsByProblem.getOrDefault(solved.getProblem(), List.of())
+                ))
                 .toList();
     }
 

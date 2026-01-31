@@ -3,6 +3,7 @@ package kr.solta.application;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.solta.application.provided.MemberReader;
+import kr.solta.application.provided.SolvedStatisticsReader;
 import kr.solta.application.provided.response.MemberProfileResponse;
 import kr.solta.application.provided.response.SolveTimeTrendsResponse;
 import kr.solta.application.provided.response.TrendPoint;
@@ -20,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class MemberService implements MemberReader {
+public class MemberService implements MemberReader, SolvedStatisticsReader {
 
     private final MemberRepository memberRepository;
     private final SolvedRepository solvedRepository;
