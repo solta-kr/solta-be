@@ -255,3 +255,139 @@ UPDATE tag
 SET created_at = NOW(),
     updated_at = NOW()
 WHERE 1 = 1;
+
+-- 테스트용 Member 추가 (dlwogns3413)
+INSERT INTO member (id, name, github_id, boj_id, avatar_url, created_at, updated_at)
+VALUES (1, 'dlwogns3413', 12345678, 'dlwogns3413', 'https://avatars.githubusercontent.com/u/12345678?v=4', NOW(), NOW())
+ON DUPLICATE KEY UPDATE name = name;
+
+-- 테스트용 Solved 데이터 추가 (그래프 테스트용)
+-- 최근 7일 데이터 (일별) - 문제가 있는 경우에만 실행
+INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, created_at, updated_at)
+SELECT 
+    FLOOR(300 + RAND() * 1800) as solve_time_seconds, -- 5분 ~ 30분
+    CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+    1 as member_id,
+    (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'B3', 'S1', 'S2', 'G1', 'G2') ORDER BY RAND() LIMIT 1) as problem_id,
+    DATE_SUB(NOW(), INTERVAL 1 DAY) as created_at,
+    NOW() as updated_at
+FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) as t
+WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
+
+INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, created_at, updated_at)
+SELECT 
+    FLOOR(400 + RAND() * 2000) as solve_time_seconds,
+    CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+    1 as member_id,
+    (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'S1', 'S2', 'G1') ORDER BY RAND() LIMIT 1) as problem_id,
+    DATE_SUB(NOW(), INTERVAL 2 DAY) as created_at,
+    NOW() as updated_at
+FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) as t
+WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
+
+INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, created_at, updated_at)
+SELECT 
+    FLOOR(200 + RAND() * 1500) as solve_time_seconds,
+    CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+    1 as member_id,
+    (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'B3', 'S1', 'S2', 'G1') ORDER BY RAND() LIMIT 1) as problem_id,
+    DATE_SUB(NOW(), INTERVAL 3 DAY) as created_at,
+    NOW() as updated_at
+FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6) as t
+WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
+
+INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, created_at, updated_at)
+SELECT 
+    FLOOR(350 + RAND() * 1900) as solve_time_seconds,
+    CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+    1 as member_id,
+    (SELECT id FROM problem WHERE tier IN ('B2', 'B3', 'S1', 'S2', 'G1', 'G2') ORDER BY RAND() LIMIT 1) as problem_id,
+    DATE_SUB(NOW(), INTERVAL 4 DAY) as created_at,
+    NOW() as updated_at
+FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) as t
+WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
+
+INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, created_at, updated_at)
+SELECT 
+    FLOOR(250 + RAND() * 1600) as solve_time_seconds,
+    CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+    1 as member_id,
+    (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'S1', 'S2', 'G1') ORDER BY RAND() LIMIT 1) as problem_id,
+    DATE_SUB(NOW(), INTERVAL 5 DAY) as created_at,
+    NOW() as updated_at
+FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) as t
+WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
+
+INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, created_at, updated_at)
+SELECT 
+    FLOOR(300 + RAND() * 1700) as solve_time_seconds,
+    CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+    1 as member_id,
+    (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'B3', 'S1', 'S2') ORDER BY RAND() LIMIT 1) as problem_id,
+    DATE_SUB(NOW(), INTERVAL 6 DAY) as created_at,
+    NOW() as updated_at
+FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) as t
+WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
+
+INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, created_at, updated_at)
+SELECT 
+    FLOOR(280 + RAND() * 1400) as solve_time_seconds,
+    CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+    1 as member_id,
+    (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'S1', 'S2', 'G1') ORDER BY RAND() LIMIT 1) as problem_id,
+    DATE_SUB(NOW(), INTERVAL 7 DAY) as created_at,
+    NOW() as updated_at
+FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) as t
+WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
+
+-- 최근 30일 데이터 (일별, 7일 이후)
+INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, created_at, updated_at)
+SELECT 
+    FLOOR(400 + RAND() * 2000) as solve_time_seconds,
+    CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+    1 as member_id,
+    (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'B3', 'B4', 'S1', 'S2', 'S3', 'G1', 'G2') ORDER BY RAND() LIMIT 1) as problem_id,
+    DATE_SUB(NOW(), INTERVAL 8 + (t.n * 2) DAY) as created_at,
+    NOW() as updated_at
+FROM (SELECT 0 as n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10) as t
+CROSS JOIN (SELECT 1 as c UNION SELECT 2 UNION SELECT 3) as c
+WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
+
+-- 최근 3개월 데이터 (주별)
+INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, created_at, updated_at)
+SELECT 
+    FLOOR(500 + RAND() * 2500) as solve_time_seconds,
+    CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+    1 as member_id,
+    (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'B3', 'B4', 'B5', 'S1', 'S2', 'S3', 'S4', 'G1', 'G2', 'G3') ORDER BY RAND() LIMIT 1) as problem_id,
+    DATE_SUB(NOW(), INTERVAL 30 + (t.n * 7) DAY) as created_at,
+    NOW() as updated_at
+FROM (SELECT 0 as n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11) as t
+CROSS JOIN (SELECT 1 as c UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8) as c
+WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
+
+-- 최근 6개월 데이터 (주별, 3개월 이후)
+INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, created_at, updated_at)
+SELECT 
+    FLOOR(600 + RAND() * 3000) as solve_time_seconds,
+    CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+    1 as member_id,
+    (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'B3', 'B4', 'B5', 'S1', 'S2', 'S3', 'S4', 'S5', 'G1', 'G2', 'G3', 'G4') ORDER BY RAND() LIMIT 1) as problem_id,
+    DATE_SUB(NOW(), INTERVAL 90 + (t.n * 7) DAY) as created_at,
+    NOW() as updated_at
+FROM (SELECT 0 as n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) as t
+CROSS JOIN (SELECT 1 as c UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6) as c
+WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
+
+-- 전체 데이터 (월별, 6개월 이전)
+INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, created_at, updated_at)
+SELECT 
+    FLOOR(800 + RAND() * 3500) as solve_time_seconds,
+    CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+    1 as member_id,
+    (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'B3', 'B4', 'B5', 'S1', 'S2', 'S3', 'S4', 'S5', 'G1', 'G2', 'G3', 'G4', 'G5', 'P1', 'P2') ORDER BY RAND() LIMIT 1) as problem_id,
+    DATE_SUB(NOW(), INTERVAL 180 + (t.n * 30) DAY) as created_at,
+    NOW() as updated_at
+FROM (SELECT 0 as n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11) as t
+CROSS JOIN (SELECT 1 as c UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18) as c
+WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
