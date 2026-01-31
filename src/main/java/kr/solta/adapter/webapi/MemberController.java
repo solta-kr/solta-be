@@ -1,10 +1,12 @@
 package kr.solta.adapter.webapi;
 
+import java.time.LocalDateTime;
 import kr.solta.adapter.webapi.resolver.Auth;
 import kr.solta.adapter.webapi.response.MemberResponse;
 import kr.solta.application.provided.MemberReader;
 import kr.solta.application.provided.SolvedStatisticsReader;
 import kr.solta.application.provided.request.AuthMember;
+import kr.solta.application.provided.response.IndependentSolveTrendsResponse;
 import kr.solta.application.provided.response.MemberProfileResponse;
 import kr.solta.application.provided.response.SolveTimeTrendsResponse;
 import kr.solta.domain.Member;
@@ -46,7 +48,28 @@ public class MemberController {
             @RequestParam("period") final SolvedPeriod solvedPeriod,
             @RequestParam final TierGroup tierGroup
     ) {
-        SolveTimeTrendsResponse response = solvedStatisticsReader.getSolveTimeTrends(name, solvedPeriod, tierGroup);
+        SolveTimeTrendsResponse response = solvedStatisticsReader.getSolveTimeTrends(
+                name,
+                solvedPeriod,
+                tierGroup,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{name}/independent-solve-trends")
+    public ResponseEntity<IndependentSolveTrendsResponse> getIndependentSolveTrends(
+            @PathVariable final String name,
+            @RequestParam("period") final SolvedPeriod solvedPeriod,
+            @RequestParam final TierGroup tierGroup
+    ) {
+        IndependentSolveTrendsResponse response = solvedStatisticsReader.getIndependentSolveTrends(
+                name,
+                solvedPeriod,
+                tierGroup,
+                LocalDateTime.now()
+        );
 
         return ResponseEntity.ok(response);
     }

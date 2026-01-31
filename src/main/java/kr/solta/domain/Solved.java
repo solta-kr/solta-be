@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,13 +38,23 @@ public class Solved extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Problem problem;
 
-    public static Solved register(int solveTimeSeconds, SolveType solveType, Member member, Problem problem) {
+    @Column(nullable = false)
+    private LocalDateTime solvedTime;
+
+    public static Solved register(
+            int solveTimeSeconds,
+            SolveType solveType,
+            Member member,
+            Problem problem,
+            LocalDateTime solvedTime
+    ) {
         Solved solved = new Solved();
 
         solved.solveTimeSeconds = solveTimeSeconds;
         solved.solveType = requireNonNull(solveType);
         solved.member = requireNonNull(member);
         solved.problem = requireNonNull(problem);
+        solved.solvedTime = requireNonNull(solvedTime);
 
         return solved;
     }

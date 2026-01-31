@@ -66,8 +66,10 @@ class SolvedFinderTest extends IntegrationTest {
         createProblemTag(problem2, tag2);
         createProblemTag(problem2, tag3);
 
-        Solved solved1 = solvedRepository.save(Solved.register(3600, SolveType.SELF, member, problem1));
-        Solved solved2 = solvedRepository.save(Solved.register(1800, SolveType.SOLUTION, member, problem2));
+        Solved solved1 = solvedRepository.save(
+                Solved.register(3600, SolveType.SELF, member, problem1, java.time.LocalDateTime.now()));
+        Solved solved2 = solvedRepository.save(
+                Solved.register(1800, SolveType.SOLUTION, member, problem2, java.time.LocalDateTime.now()));
 
         //when
         List<SolvedWithTags> result = solvedFinder.findSolvedWithTags(member.getName());
@@ -99,10 +101,11 @@ class SolvedFinderTest extends IntegrationTest {
         List<TierGroupAverage> result = solvedFinder.findTierGroupAverages(member.getName());
 
         //then
-        assertThat(result).hasSize(7)
+        assertThat(result).hasSize(TierGroup.values().length)
                 .extracting(TierGroupAverage::tierGroup, TierGroupAverage::averageSolvedSeconds,
                         TierGroupAverage::solvedCount)
                 .containsExactly(
+                        tuple(TierGroup.NONE, null, 0L),
                         tuple(TierGroup.UNRATED, null, 0L),
                         tuple(TierGroup.BRONZE, 2700.0, 2L),
                         tuple(TierGroup.SILVER, 5400.0, 1L),
@@ -146,7 +149,7 @@ class SolvedFinderTest extends IntegrationTest {
 
         //then
         assertSoftly(softly -> {
-            softly.assertThat(result).hasSize(7);
+            softly.assertThat(result).hasSize(TierGroup.values().length);
             softly.assertThat(result.get(TierGroup.BRONZE)).hasSize(5)
                     .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount)
                     .containsExactly(

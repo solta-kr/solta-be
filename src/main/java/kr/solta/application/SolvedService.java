@@ -1,5 +1,6 @@
 package kr.solta.application;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,8 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
                 solvedRegisterRequest.solveTimeSeconds(),
                 solvedRegisterRequest.solveType(),
                 solvedMember,
-                problem
+                problem,
+                LocalDateTime.now()
         );
 
         return solvedRepository.save(solved);

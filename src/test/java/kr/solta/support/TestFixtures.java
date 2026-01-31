@@ -1,5 +1,6 @@
 package kr.solta.support;
 
+import java.time.LocalDateTime;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.ProblemTag;
@@ -51,14 +52,24 @@ public class TestFixtures {
     }
 
     public static Solved createSolved(Member member, Problem problem) {
-        return Solved.register(3600, SolveType.SELF, member, problem);
+        return Solved.register(3600, SolveType.SELF, member, problem, LocalDateTime.now());
     }
 
     public static Solved createSolved(int solveTimeSeconds, Member member, Problem problem) {
-        return Solved.register(solveTimeSeconds, SolveType.SELF, member, problem);
+        return Solved.register(solveTimeSeconds, SolveType.SELF, member, problem, LocalDateTime.now());
     }
 
     public static Solved createSolved(int solveTimeSeconds, SolveType solveType, Member member, Problem problem) {
-        return Solved.register(solveTimeSeconds, solveType, member, problem);
+        return Solved.register(solveTimeSeconds, solveType, member, problem, LocalDateTime.now());
+    }
+
+    public static Solved createSolved(
+            int solveTimeSeconds,
+            SolveType solveType,
+            Member member,
+            Problem problem,
+            LocalDateTime solvedTime
+    ) {
+        return Solved.register(solveTimeSeconds, solveType, member, problem, solvedTime);
     }
 }

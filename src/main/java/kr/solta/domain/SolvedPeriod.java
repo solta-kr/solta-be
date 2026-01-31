@@ -21,11 +21,11 @@ public enum SolvedPeriod {
         this.aggregationType = aggregationType;
     }
 
-    public LocalDateTime getStartDate() {
+    public LocalDateTime getStartDate(final LocalDateTime now) {
         if (days == null) {
             return null;
         }
 
-        return LocalDateTime.now().minusDays(days);
+        return now.minusDays(days);
     }
 }
