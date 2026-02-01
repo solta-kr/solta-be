@@ -10,6 +10,7 @@ import kr.solta.application.provided.SolvedFinder;
 import kr.solta.application.provided.SolvedRegister;
 import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.request.SolvedRegisterRequest;
+import kr.solta.application.provided.request.SolvedSortType;
 import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.domain.Solved;
 import kr.solta.domain.TierAverage;
@@ -65,5 +66,19 @@ public class SolvedController {
         Map<TierGroup, List<TierAverage>> response = solvedFinder.findTierAverages(name);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/members/solveds/retry/search")
+    public ResponseEntity<List<RecentSolvedResponse>> findProblemsToRetry(
+            @RequestParam final String name,
+            @RequestParam(defaultValue = "LATEST") final SolvedSortType sortType
+    ) {
+        List<SolvedWithTags> solvedWithTags = solvedFinder.findProblemsToRetry(name, sortType);
+
+        List<RecentSolvedResponse> recentSolvedResponses = solvedWithTags.stream()
+                .map(RecentSolvedResponse::from)
+                .toList();
+
+        return ResponseEntity.ok(recentSolvedResponses);
     }
 }

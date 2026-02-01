@@ -8,6 +8,7 @@ import kr.solta.application.required.dto.SolvedStats;
 import kr.solta.application.required.dto.TrendData;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
+import kr.solta.domain.SolveType;
 import kr.solta.domain.Solved;
 import kr.solta.domain.SolvedAverage;
 import kr.solta.domain.Tier;
@@ -150,4 +151,19 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
             final String dateFormat,
             final List<Tier> tiers
     );
+
+    @EntityGraph(attributePaths = "problem")
+    List<Solved> findByMemberAndSolveTypeOrderBySolvedTimeDesc(final Member member, final SolveType solveType);
+
+    @Query("""
+                SELECT s FROM Solved s
+                JOIN FETCH s.problem p
+                WHERE s.member = :member
+                AND s.solveType = :solveType
+                ORDER BY p.level DESC
+            """)
+    List<Solved> findByMemberAndSolveTypeOrderByLevel(final Member member, final SolveType solveType);
+
+    @EntityGraph(attributePaths = "problem")
+    List<Solved> findByMemberAndSolveTypeOrderBySolveTimeSecondsDesc(final Member member, final SolveType solveType);
 }

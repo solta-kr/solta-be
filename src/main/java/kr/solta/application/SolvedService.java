@@ -10,6 +10,7 @@ import kr.solta.application.provided.SolvedFinder;
 import kr.solta.application.provided.SolvedRegister;
 import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.request.SolvedRegisterRequest;
+import kr.solta.application.provided.request.SolvedSortType;
 import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.ProblemRepository;
@@ -19,6 +20,7 @@ import kr.solta.application.required.dto.SolvedStats;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.ProblemTag;
+import kr.solta.domain.SolveType;
 import kr.solta.domain.Solved;
 import kr.solta.domain.Tag;
 import kr.solta.domain.TierAverage;
@@ -92,10 +94,23 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
         Member member = getMemberByName(name);
 
         List<Solved> solveds = solvedRepository.findByMemberOrderByCreatedAtDesc(member);
-        List<Problem> problems = solveds.stream()
-                .map(Solved::getProblem)
+        Map<Problem, List<Tag>> tagsByProblem = geProblemTags(solveds);
+
+        return solveds.stream()
+                .map(solved -> new SolvedWithTags(
+                        solved,
+                        tagsByProblem.getOrDefault(solved.getProblem(), List.of())
+                ))
                 .toList();
-        Map<Problem, List<Tag>> tagsByProblem = getTagsByProblem(problems);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<SolvedWithTags> findProblemsToRetry(final String name, final SolvedSortType sortType) {
+        Member member = getMemberByName(name);
+
+        List<Solved> solveds = getRetrySolveds(sortType, member);
+        Map<Problem, List<Tag>> tagsByProblem = geProblemTags(solveds);
 
         return solveds.stream()
                 .map(solved -> new SolvedWithTags(
@@ -110,6 +125,14 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
                 .orElseThrow(() -> new NotFoundEntityException(
                         "백준 문제 번호: " + solvedRegisterRequest.bojProblemId() + " 에 해당하는 문제가 존재하지 않습니다.")
                 );
+    }
+
+    private Map<Problem, List<Tag>> geProblemTags(final List<Solved> solveds) {
+        List<Problem> problems = solveds.stream()
+                .map(Solved::getProblem)
+                .toList();
+
+        return getTagsByProblem(problems);
     }
 
     private Member getMemberById(final Long id) {
@@ -130,5 +153,22 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
                         ProblemTag::getProblem,
                         Collectors.mapping(ProblemTag::getTag, Collectors.toList())
                 ));
+    }
+
+    private List<Solved> getRetrySolveds(final SolvedSortType sortType, final Member member) {
+        return switch (sortType) {
+            case LATEST -> solvedRepository.findByMemberAndSolveTypeOrderBySolvedTimeDesc(
+                    member,
+                    SolveType.SOLUTION
+            );
+            case TIER -> solvedRepository.findByMemberAndSolveTypeOrderByLevel(
+                    member,
+                    SolveType.SOLUTION
+            );
+            case SOLVE_TIME -> solvedRepository.findByMemberAndSolveTypeOrderBySolveTimeSecondsDesc(
+                    member,
+                    SolveType.SOLUTION
+            );
+        };
     }
 }

@@ -2,6 +2,7 @@ package kr.solta.application.provided;
 
 import java.util.List;
 import java.util.Map;
+import kr.solta.application.provided.request.SolvedSortType;
 import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.domain.TierAverage;
 import kr.solta.domain.TierGroup;
@@ -14,4 +15,6 @@ public interface SolvedFinder {
     Map<TierGroup, List<TierAverage>> findTierAverages(final String name);
 
     List<SolvedWithTags> findSolvedWithTags(final String name);
+
+    List<SolvedWithTags> findProblemsToRetry(final String name, final SolvedSortType sortType);
 }

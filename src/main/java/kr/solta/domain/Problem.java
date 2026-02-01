@@ -30,9 +30,13 @@ public class Problem extends BaseEntity {
     @Column(nullable = false)
     private Tier tier;
 
+    @Column(nullable = false)
+    private int level;
+
     public Problem(final String title, final long bojProblemId, final Tier tier) {
         this.title = title;
         this.bojProblemId = bojProblemId;
         this.tier = tier;
+        this.level = tier.getLevel();
     }
 }

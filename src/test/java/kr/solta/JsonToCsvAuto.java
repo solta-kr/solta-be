@@ -59,8 +59,8 @@ public class JsonToCsvAuto {
                     int level = root.get("level").asInt();
                     String tier = mapLevelToTier(level);
 
-                    problemCsv.write(String.format("%d,\"%s\",%d,%s\n",
-                            problemAutoId[0], title, bojProblemId, tier));
+                    problemCsv.write(String.format("%d,\"%s\",%d,%s,%d\n",
+                            problemAutoId[0], title, bojProblemId, tier, level));
 
                     JsonNode tags = root.get("tags");
                     if (tags != null) {
