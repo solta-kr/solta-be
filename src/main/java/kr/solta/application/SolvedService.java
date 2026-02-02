@@ -161,7 +161,7 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
                     member,
                     SolveType.SOLUTION
             );
-            case TIER -> solvedRepository.findByMemberAndSolveTypeOrderByLevel(
+            case TIER -> solvedRepository.findByMemberAndSolveTypeOrderByLevelDesc(
                     member,
                     SolveType.SOLUTION
             );

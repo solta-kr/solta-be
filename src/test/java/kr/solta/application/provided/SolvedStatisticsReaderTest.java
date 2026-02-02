@@ -20,11 +20,9 @@ import kr.solta.domain.SolvedPeriod;
 import kr.solta.domain.Tier;
 import kr.solta.domain.TierGroup;
 import kr.solta.support.IntegrationTest;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@Disabled
 class SolvedStatisticsReaderTest extends IntegrationTest {
 
     @Autowired
@@ -73,7 +71,7 @@ class SolvedStatisticsReaderTest extends IntegrationTest {
         //then
         assertSoftly(softly -> {
             softly.assertThat(response.period()).isEqualTo("1주");
-            softly.assertThat(response.tierGroup()).isEqualTo("ALL");
+            softly.assertThat(response.tierGroup()).isEqualTo("NONE");
             softly.assertThat(response.totalSolvedCount()).isEqualTo(5L);
             softly.assertThat(response.trends()).hasSize(3);
 
@@ -133,7 +131,7 @@ class SolvedStatisticsReaderTest extends IntegrationTest {
         //then
         assertSoftly(softly -> {
             softly.assertThat(response.period()).isEqualTo("1주");
-            softly.assertThat(response.tierGroup()).isEqualTo("ALL");
+            softly.assertThat(response.tierGroup()).isEqualTo("NONE");
             softly.assertThat(response.totalIndependentCount()).isEqualTo(4L); // SELF 총 4개
             softly.assertThat(response.totalTotalCount()).isEqualTo(6L); // 전체 6개
             softly.assertThat(response.trends()).hasSize(3);

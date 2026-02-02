@@ -162,7 +162,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 AND s.solveType = :solveType
                 ORDER BY p.level DESC
             """)
-    List<Solved> findByMemberAndSolveTypeOrderByLevel(final Member member, final SolveType solveType);
+    List<Solved> findByMemberAndSolveTypeOrderByLevelDesc(final Member member, final SolveType solveType);
 
     @EntityGraph(attributePaths = "problem")
     List<Solved> findByMemberAndSolveTypeOrderBySolveTimeSecondsDesc(final Member member, final SolveType solveType);
