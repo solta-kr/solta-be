@@ -1,4 +1,4 @@
-package kr.solta.domain;
+package kr.solta.application.provided.request;
 
 import java.util.Arrays;
 

@@ -10,6 +10,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import java.util.List;
 import java.util.Map;
 import kr.solta.application.provided.request.SolvedSortType;
+import kr.solta.application.provided.request.TagKey;
 import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.ProblemRepository;
@@ -99,7 +100,7 @@ class SolvedFinderTest extends IntegrationTest {
         solvedRepository.save(createSolved(7200, SolveType.SELF, member, goldProblem));
 
         //when
-        List<TierGroupAverage> result = solvedFinder.findTierGroupAverages(member.getName());
+        List<TierGroupAverage> result = solvedFinder.findTierGroupAverages(member.getName(), null);
 
         //then
         assertThat(result).hasSize(TierGroup.values().length)
@@ -123,7 +124,7 @@ class SolvedFinderTest extends IntegrationTest {
         String notExistMemberName = "notExistUser";
 
         //when & then
-        assertThatThrownBy(() -> solvedFinder.findTierGroupAverages(notExistMemberName))
+        assertThatThrownBy(() -> solvedFinder.findTierGroupAverages(notExistMemberName, null))
                 .isInstanceOf(Exception.class)
                 .hasMessageContaining("존재하지 않는 사용자입니다");
     }
@@ -331,6 +332,82 @@ class SolvedFinderTest extends IntegrationTest {
                         new SolvedWithTags(solved2, List.of(tag2, tag3)),
                         new SolvedWithTags(solved1, List.of(tag1, tag2))
                 );
+    }
+
+    @Test
+    void 태그별_TierGroup_평균_풀이_시간을_조회할_수_있다() {
+        //given
+        Member member = memberRepository.save(createMember(1L, "testUser"));
+
+        // DP 태그와 그리디 태그 생성
+        Tag dpTag = createTag(1, "dp", "다이나믹 프로그래밍");
+        Tag greedyTag = createTag(2, "greedy", "그리디 알고리즘");
+
+        // DP 문제들 (다양한 티어)
+        Problem dpBronze = createProblem("DP브론즈", 1000L, Tier.B1);
+        Problem dpSilver = createProblem("DP실버", 1001L, Tier.S1);
+        Problem dpGold1 = createProblem("DP골드1", 1002L, Tier.G1);
+        Problem dpGold2 = createProblem("DP골드2", 1003L, Tier.G2);
+
+        // 그리디 문제들
+        Problem greedyBronze = createProblem("그리디브론즈", 1004L, Tier.B2);
+        Problem greedySilver = createProblem("그리디실버", 1005L, Tier.S2);
+
+        // 문제-태그 연결
+        createProblemTag(dpBronze, dpTag);
+        createProblemTag(dpSilver, dpTag);
+        createProblemTag(dpGold1, dpTag);
+        createProblemTag(dpGold2, dpTag);
+        createProblemTag(greedyBronze, greedyTag);
+        createProblemTag(greedySilver, greedyTag);
+
+        // DP 문제 풀이 기록
+        solvedRepository.save(createSolved(1800, SolveType.SELF, member, dpBronze));  // 브론즈
+        solvedRepository.save(createSolved(3600, SolveType.SOLUTION, member, dpSilver));  // 실버
+        solvedRepository.save(createSolved(5400, SolveType.SELF, member, dpGold1));  // 골드
+        solvedRepository.save(createSolved(7200, SolveType.SELF, member, dpGold2));  // 골드
+
+        // 그리디 문제 풀이 기록 (DP 태그로 검색할 때는 제외되어야 함)
+        solvedRepository.save(createSolved(2000, SolveType.SELF, member, greedyBronze));
+        solvedRepository.save(createSolved(4000, SolveType.SELF, member, greedySilver));
+
+        //when - DP 태그로 필터링
+        List<TierGroupAverage> result = solvedFinder.findTierGroupAverages(member.getName(), TagKey.DP);
+
+        //then
+        assertThat(result).hasSize(TierGroup.values().length);
+
+        // DP 태그를 가진 문제만 집계되어야 함
+        TierGroupAverage bronze = result.stream()
+                .filter(avg -> avg.tierGroup() == TierGroup.BRONZE)
+                .findFirst()
+                .orElseThrow();
+        assertThat(bronze.averageSolvedSeconds()).isEqualTo(1800.0);
+        assertThat(bronze.solvedCount()).isEqualTo(1L);
+        assertThat(bronze.independentSolvedCount()).isEqualTo(1L);  // SELF
+
+        TierGroupAverage silver = result.stream()
+                .filter(avg -> avg.tierGroup() == TierGroup.SILVER)
+                .findFirst()
+                .orElseThrow();
+        assertThat(silver.averageSolvedSeconds()).isEqualTo(3600.0);
+        assertThat(silver.solvedCount()).isEqualTo(1L);
+        assertThat(silver.independentSolvedCount()).isEqualTo(0L);  // SOLUTION
+
+        TierGroupAverage gold = result.stream()
+                .filter(avg -> avg.tierGroup() == TierGroup.GOLD)
+                .findFirst()
+                .orElseThrow();
+        assertThat(gold.averageSolvedSeconds()).isEqualTo((5400.0 + 7200.0) / 2);
+        assertThat(gold.solvedCount()).isEqualTo(2L);
+        assertThat(gold.independentSolvedCount()).isEqualTo(2L);  // 둘 다 SELF
+
+        // 나머지 티어는 0이어야 함
+        TierGroupAverage platinum = result.stream()
+                .filter(avg -> avg.tierGroup() == TierGroup.PLATINUM)
+                .findFirst()
+                .orElseThrow();
+        assertThat(platinum.solvedCount()).isEqualTo(0L);
     }
 
     private Problem createProblem(String title, long bojProblemId, Tier tier) {

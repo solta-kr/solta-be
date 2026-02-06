@@ -3,6 +3,7 @@ package kr.solta.application;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.solta.application.provided.SolvedStatisticsReader;
+import kr.solta.application.provided.request.TagKey;
 import kr.solta.application.provided.response.IndependentRatioPoint;
 import kr.solta.application.provided.response.IndependentSolveTrendsResponse;
 import kr.solta.application.provided.response.SolveTimeTrendsResponse;
@@ -13,7 +14,6 @@ import kr.solta.application.required.dto.IndependentRatioData;
 import kr.solta.application.required.dto.TrendData;
 import kr.solta.domain.Member;
 import kr.solta.domain.SolvedPeriod;
-import kr.solta.domain.TagKey;
 import kr.solta.domain.Tier;
 import kr.solta.domain.TierGroup;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +56,8 @@ public class SolvedStatisticsService implements SolvedStatisticsReader {
     ) {
         Member member = getMemberByName(name);
 
-        List<IndependentRatioPoint> trends = getIndependentRatioPoints(member, solvedPeriod, tierGroup.getTiers(), tagKey, now);
+        List<IndependentRatioPoint> trends = getIndependentRatioPoints(member, solvedPeriod, tierGroup.getTiers(),
+                tagKey, now);
 
         return IndependentSolveTrendsResponse.of(
                 solvedPeriod,
@@ -102,7 +103,8 @@ public class SolvedStatisticsService implements SolvedStatisticsReader {
 
         return tiers.isEmpty()
                 ? solvedRepository.findSolveTimeTrendsByTag(memberId, startDate, dateFormat, tagKey.getKey())
-                : solvedRepository.findSolveTimeTrendsByTiersAndTag(memberId, startDate, dateFormat, tiers, tagKey.getKey());
+                : solvedRepository.findSolveTimeTrendsByTiersAndTag(memberId, startDate, dateFormat, tiers,
+                        tagKey.getKey());
     }
 
     private Long getTotalSolvedCount(
@@ -132,7 +134,8 @@ public class SolvedStatisticsService implements SolvedStatisticsReader {
         LocalDateTime startDate = solvedPeriod.getStartDate(now);
         String dateFormat = solvedPeriod.getAggregationType().getDateFormat();
 
-        List<IndependentRatioData> ratioData = getIndependentRatioData(member.getId(), startDate, dateFormat, tiers, tagKey);
+        List<IndependentRatioData> ratioData = getIndependentRatioData(member.getId(), startDate, dateFormat, tiers,
+                tagKey);
 
         return ratioData.stream()
                 .map(data -> new IndependentRatioPoint(data.date(), data.independentCount(), data.totalCount()))
@@ -154,6 +157,7 @@ public class SolvedStatisticsService implements SolvedStatisticsReader {
 
         return tiers.isEmpty()
                 ? solvedRepository.findIndependentRatioTrendsByTag(memberId, startDate, dateFormat, tagKey.getKey())
-                : solvedRepository.findIndependentRatioTrendsByTiersAndTag(memberId, startDate, dateFormat, tiers, tagKey.getKey());
+                : solvedRepository.findIndependentRatioTrendsByTiersAndTag(memberId, startDate, dateFormat, tiers,
+                        tagKey.getKey());
     }
 }

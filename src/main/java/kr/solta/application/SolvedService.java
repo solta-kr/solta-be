@@ -11,6 +11,7 @@ import kr.solta.application.provided.SolvedRegister;
 import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.request.SolvedRegisterRequest;
 import kr.solta.application.provided.request.SolvedSortType;
+import kr.solta.application.provided.request.TagKey;
 import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.ProblemRepository;
@@ -61,15 +62,15 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
 
     @Transactional(readOnly = true)
     @Override
-    public List<TierGroupAverage> findTierGroupAverages(final String name) {
+    public List<TierGroupAverage> findTierGroupAverages(final String name, final TagKey tagKey) {
         Member member = getMemberByName(name);
 
         List<TierGroupAverage> tierGroupAverages = new ArrayList<>();
         for (TierGroup tierGroup : TierGroup.values()) {
-            SolvedStats solvedStats = solvedRepository.calculateTierGroupAverageByMember(
-                    member,
-                    tierGroup.getTiers()
-            );
+            SolvedStats solvedStats = tagKey == null
+                    ? solvedRepository.calculateTierGroupAverageByMember(member, tierGroup.getTiers())
+                    : solvedRepository.calculateTierGroupAverageByMemberAndTag(member, tierGroup.getTiers(), tagKey.getKey());
+
             tierGroupAverages.add(
                     new TierGroupAverage(tierGroup, solvedStats.average(), solvedStats.count(), solvedStats.independentCount())
             );

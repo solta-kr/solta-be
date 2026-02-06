@@ -6,6 +6,7 @@ import static kr.solta.support.TestFixtures.createSolved;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.time.LocalDateTime;
+import kr.solta.application.provided.request.TagKey;
 import kr.solta.application.provided.response.IndependentRatioPoint;
 import kr.solta.application.provided.response.IndependentSolveTrendsResponse;
 import kr.solta.application.provided.response.SolveTimeTrendsResponse;
@@ -21,7 +22,6 @@ import kr.solta.domain.ProblemTag;
 import kr.solta.domain.SolveType;
 import kr.solta.domain.SolvedPeriod;
 import kr.solta.domain.Tag;
-import kr.solta.domain.TagKey;
 import kr.solta.domain.Tier;
 import kr.solta.domain.TierGroup;
 import kr.solta.support.IntegrationTest;

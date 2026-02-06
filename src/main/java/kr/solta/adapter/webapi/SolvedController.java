@@ -11,6 +11,7 @@ import kr.solta.application.provided.SolvedRegister;
 import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.request.SolvedRegisterRequest;
 import kr.solta.application.provided.request.SolvedSortType;
+import kr.solta.application.provided.request.TagKey;
 import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.domain.Solved;
 import kr.solta.domain.TierAverage;
@@ -55,8 +56,11 @@ public class SolvedController {
     }
 
     @GetMapping("/members/solveds/tier-group/average-time/search")
-    public ResponseEntity<List<TierGroupAverage>> findTierGroupAverageTime(@RequestParam final String name) {
-        List<TierGroupAverage> tierGroupAverages = solvedFinder.findTierGroupAverages(name);
+    public ResponseEntity<List<TierGroupAverage>> findTierGroupAverageTime(
+            @RequestParam final String name,
+            @RequestParam(required = false) final TagKey tagKey
+    ) {
+        List<TierGroupAverage> tierGroupAverages = solvedFinder.findTierGroupAverages(name, tagKey);
 
         return ResponseEntity.ok(tierGroupAverages);
     }

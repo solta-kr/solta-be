@@ -1,10 +1,10 @@
 package kr.solta.application.provided;
 
 import java.time.LocalDateTime;
+import kr.solta.application.provided.request.TagKey;
 import kr.solta.application.provided.response.IndependentSolveTrendsResponse;
 import kr.solta.application.provided.response.SolveTimeTrendsResponse;
 import kr.solta.domain.SolvedPeriod;
-import kr.solta.domain.TagKey;
 import kr.solta.domain.TierGroup;
 
 public interface SolvedStatisticsReader {
