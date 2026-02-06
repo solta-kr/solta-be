@@ -65,6 +65,7 @@ class SolvedStatisticsReaderTest extends IntegrationTest {
                 "testUser",
                 SolvedPeriod.WEEK,
                 TierGroup.NONE,
+                null,
                 now
         );
 
@@ -125,6 +126,7 @@ class SolvedStatisticsReaderTest extends IntegrationTest {
                 "testUser",
                 SolvedPeriod.WEEK,
                 TierGroup.NONE,
+                null,
                 now
         );
 
@@ -182,6 +184,7 @@ class SolvedStatisticsReaderTest extends IntegrationTest {
                 "testUser",
                 SolvedPeriod.WEEK,
                 TierGroup.BRONZE,
+                null,
                 now
         );
 
@@ -223,6 +226,7 @@ class SolvedStatisticsReaderTest extends IntegrationTest {
                 "emptyUser",
                 SolvedPeriod.WEEK,
                 TierGroup.NONE,
+                null,
                 now
         );
 
@@ -230,6 +234,7 @@ class SolvedStatisticsReaderTest extends IntegrationTest {
                 "emptyUser",
                 SolvedPeriod.WEEK,
                 TierGroup.NONE,
+                null,
                 now
         );
 

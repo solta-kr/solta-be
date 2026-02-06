@@ -3,6 +3,7 @@ package kr.solta.domain;
 public record TierGroupAverage(
         TierGroup tierGroup,
         Double averageSolvedSeconds,
-        long solvedCount
+        long solvedCount,
+        long independentSolvedCount
 ) {
 }

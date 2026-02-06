@@ -11,6 +11,7 @@ import kr.solta.application.provided.response.MemberProfileResponse;
 import kr.solta.application.provided.response.SolveTimeTrendsResponse;
 import kr.solta.domain.Member;
 import kr.solta.domain.SolvedPeriod;
+import kr.solta.domain.TagKey;
 import kr.solta.domain.TierGroup;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -46,12 +47,14 @@ public class MemberController {
     public ResponseEntity<SolveTimeTrendsResponse> getSolveTimeTrends(
             @PathVariable final String name,
             @RequestParam("period") final SolvedPeriod solvedPeriod,
-            @RequestParam final TierGroup tierGroup
+            @RequestParam final TierGroup tierGroup,
+            @RequestParam(required = false) final TagKey tagKey
     ) {
         SolveTimeTrendsResponse response = solvedStatisticsReader.getSolveTimeTrends(
                 name,
                 solvedPeriod,
                 tierGroup,
+                tagKey,
                 LocalDateTime.now()
         );
 
@@ -62,12 +65,14 @@ public class MemberController {
     public ResponseEntity<IndependentSolveTrendsResponse> getIndependentSolveTrends(
             @PathVariable final String name,
             @RequestParam("period") final SolvedPeriod solvedPeriod,
-            @RequestParam final TierGroup tierGroup
+            @RequestParam final TierGroup tierGroup,
+            @RequestParam(required = false) final TagKey tagKey
     ) {
         IndependentSolveTrendsResponse response = solvedStatisticsReader.getIndependentSolveTrends(
                 name,
                 solvedPeriod,
                 tierGroup,
+                tagKey,
                 LocalDateTime.now()
         );
 

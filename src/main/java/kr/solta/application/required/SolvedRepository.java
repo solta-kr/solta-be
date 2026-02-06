@@ -31,7 +31,11 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     List<SolvedAverage> findSolvedAveragesByProblems(List<Problem> problems);
 
     @Query("""
-                select new kr.solta.application.required.dto.SolvedStats(count(s.id), avg(s.solveTimeSeconds))
+                select new kr.solta.application.required.dto.SolvedStats(
+                    count(s.id),
+                    avg(s.solveTimeSeconds),
+                    coalesce(sum(case when s.solveType = kr.solta.domain.SolveType.SELF then 1 else 0 end), 0)
+                )
                 from Solved s
                 where s.member = :member and s.problem.tier in :tiers
             """)
@@ -115,6 +119,88 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     );
 
     @Query("""
+                SELECT new kr.solta.application.required.dto.TrendData(
+                    CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string),
+                    AVG(s.solveTimeSeconds),
+                    COUNT(s.id)
+                )
+                FROM Solved s
+                JOIN s.problem p
+                JOIN ProblemTag pt ON pt.problem = p
+                JOIN pt.tag t
+                WHERE s.member.id = :memberId
+                AND (:startDate IS NULL OR s.solvedTime >= :startDate)
+                AND t.key = :tagKey
+                GROUP BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
+                ORDER BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
+            """)
+    List<TrendData> findSolveTimeTrendsByTag(
+            final Long memberId,
+            final LocalDateTime startDate,
+            final String dateFormat,
+            final String tagKey
+    );
+
+    @Query("""
+                SELECT new kr.solta.application.required.dto.TrendData(
+                    CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string),
+                    AVG(s.solveTimeSeconds),
+                    COUNT(s.id)
+                )
+                FROM Solved s
+                JOIN s.problem p
+                JOIN ProblemTag pt ON pt.problem = p
+                JOIN pt.tag t
+                WHERE s.member.id = :memberId
+                AND (:startDate IS NULL OR s.solvedTime >= :startDate)
+                AND s.problem.tier IN :tiers
+                AND t.key = :tagKey
+                GROUP BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
+                ORDER BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
+            """)
+    List<TrendData> findSolveTimeTrendsByTiersAndTag(
+            final Long memberId,
+            final LocalDateTime startDate,
+            final String dateFormat,
+            final List<Tier> tiers,
+            final String tagKey
+    );
+
+    @Query("""
+                SELECT COUNT(DISTINCT s.id)
+                FROM Solved s
+                JOIN s.problem p
+                JOIN ProblemTag pt ON pt.problem = p
+                JOIN pt.tag t
+                WHERE s.member.id = :memberId
+                AND (:startDate IS NULL OR s.solvedTime >= :startDate)
+                AND t.key = :tagKey
+            """)
+    Long countSolvedByPeriodAndTag(
+            final Long memberId,
+            final LocalDateTime startDate,
+            final String tagKey
+    );
+
+    @Query("""
+                SELECT COUNT(DISTINCT s.id)
+                FROM Solved s
+                JOIN s.problem p
+                JOIN ProblemTag pt ON pt.problem = p
+                JOIN pt.tag t
+                WHERE s.member.id = :memberId
+                AND (:startDate IS NULL OR s.solvedTime >= :startDate)
+                AND s.problem.tier IN :tiers
+                AND t.key = :tagKey
+            """)
+    Long countSolvedByPeriodAndTiersAndTag(
+            final Long memberId,
+            final LocalDateTime startDate,
+            final List<Tier> tiers,
+            final String tagKey
+    );
+
+    @Query("""
                 SELECT new kr.solta.application.required.dto.IndependentRatioData(
                     CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string),
                     SUM(CASE WHEN s.solveType = kr.solta.domain.SolveType.SELF THEN 1 ELSE 0 END),
@@ -150,6 +236,54 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
             final LocalDateTime startDate,
             final String dateFormat,
             final List<Tier> tiers
+    );
+
+    @Query("""
+                SELECT new kr.solta.application.required.dto.IndependentRatioData(
+                    CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string),
+                    SUM(CASE WHEN s.solveType = kr.solta.domain.SolveType.SELF THEN 1 ELSE 0 END),
+                    COUNT(s.id)
+                )
+                FROM Solved s
+                JOIN s.problem p
+                JOIN ProblemTag pt ON pt.problem = p
+                JOIN pt.tag t
+                WHERE s.member.id = :memberId
+                AND (:startDate IS NULL OR s.solvedTime >= :startDate)
+                AND t.key = :tagKey
+                GROUP BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
+                ORDER BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
+            """)
+    List<IndependentRatioData> findIndependentRatioTrendsByTag(
+            final Long memberId,
+            final LocalDateTime startDate,
+            final String dateFormat,
+            final String tagKey
+    );
+
+    @Query("""
+                SELECT new kr.solta.application.required.dto.IndependentRatioData(
+                    CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string),
+                    SUM(CASE WHEN s.solveType = kr.solta.domain.SolveType.SELF THEN 1 ELSE 0 END),
+                    COUNT(s.id)
+                )
+                FROM Solved s
+                JOIN s.problem p
+                JOIN ProblemTag pt ON pt.problem = p
+                JOIN pt.tag t
+                WHERE s.member.id = :memberId
+                AND (:startDate IS NULL OR s.solvedTime >= :startDate)
+                AND s.problem.tier IN :tiers
+                AND t.key = :tagKey
+                GROUP BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
+                ORDER BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
+            """)
+    List<IndependentRatioData> findIndependentRatioTrendsByTiersAndTag(
+            final Long memberId,
+            final LocalDateTime startDate,
+            final String dateFormat,
+            final List<Tier> tiers,
+            final String tagKey
     );
 
     @EntityGraph(attributePaths = "problem")

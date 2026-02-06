@@ -71,7 +71,7 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
                     tierGroup.getTiers()
             );
             tierGroupAverages.add(
-                    new TierGroupAverage(tierGroup, solvedStats.average(), solvedStats.count())
+                    new TierGroupAverage(tierGroup, solvedStats.average(), solvedStats.count(), solvedStats.independentCount())
             );
         }
 
