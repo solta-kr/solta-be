@@ -65,6 +65,17 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     List<TierAverage> findTierAverageByMember(Member member);
 
     @Query("""
+                select new kr.solta.domain.TierAverage(s.problem.tier, avg(s.solveTimeSeconds), count(distinct s.id))
+                from Solved s
+                join s.problem p
+                join ProblemTag pt on pt.problem = p
+                join pt.tag t
+                where s.member = :member and t.key = :tagKey
+                group by s.problem.tier
+            """)
+    List<TierAverage> findTierAverageByMemberAndTag(Member member, String tagKey);
+
+    @Query("""
                 select new kr.solta.application.required.dto.AllSolvedAverage(count(s.id), sum (s.solveTimeSeconds), avg(s.solveTimeSeconds))
                 from Solved s
                 where s.member = :member

@@ -81,10 +81,14 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
 
     @Transactional(readOnly = true)
     @Override
-    public Map<TierGroup, List<TierAverage>> findTierAverages(final String name) {
+    public Map<TierGroup, List<TierAverage>> findTierAverages(final String name, final TagKey tagKey) {
         Member member = getMemberByName(name);
 
-        TierAverages tierAverages = new TierAverages(solvedRepository.findTierAverageByMember(member));
+        List<TierAverage> averages = tagKey == null
+                ? solvedRepository.findTierAverageByMember(member)
+                : solvedRepository.findTierAverageByMemberAndTag(member, tagKey.getKey());
+
+        TierAverages tierAverages = new TierAverages(averages);
 
         return tierAverages.toTierGroupAverageMap();
     }

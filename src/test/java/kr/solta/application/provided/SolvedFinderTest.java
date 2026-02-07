@@ -147,7 +147,7 @@ class SolvedFinderTest extends IntegrationTest {
         solvedRepository.save(createSolved(4800, SolveType.SELF, member, goldProblem3));
 
         //when
-        Map<TierGroup, List<TierAverage>> result = solvedFinder.findTierAverages(member.getName());
+        Map<TierGroup, List<TierAverage>> result = solvedFinder.findTierAverages(member.getName(), null);
 
         //then
         assertSoftly(softly -> {
@@ -179,7 +179,7 @@ class SolvedFinderTest extends IntegrationTest {
         String notExistMemberName = "notExistUser";
 
         //when & then
-        assertThatThrownBy(() -> solvedFinder.findTierAverages(notExistMemberName))
+        assertThatThrownBy(() -> solvedFinder.findTierAverages(notExistMemberName, null))
                 .isInstanceOf(Exception.class)
                 .hasMessageContaining("존재하지 않는 사용자입니다");
     }
@@ -332,6 +332,44 @@ class SolvedFinderTest extends IntegrationTest {
                         new SolvedWithTags(solved2, List.of(tag2, tag3)),
                         new SolvedWithTags(solved1, List.of(tag1, tag2))
                 );
+    }
+
+    @Test
+    void 태그별_Tier_평균_풀이_시간을_조회할_수_있다() {
+        //given
+        Member member = memberRepository.save(createMember(1L, "testUser"));
+
+        Tag dpTag = createTag(1, "dp", "다이나믹 프로그래밍");
+        Tag greedyTag = createTag(2, "greedy", "그리디 알고리즘");
+
+        Problem dpBronze = createProblem("DP브론즈", 1000L, Tier.B1);
+        Problem dpGold = createProblem("DP골드", 1001L, Tier.G3);
+        Problem greedySilver = createProblem("그리디실버", 1002L, Tier.S2);
+
+        createProblemTag(dpBronze, dpTag);
+        createProblemTag(dpGold, dpTag);
+        createProblemTag(greedySilver, greedyTag);
+
+        solvedRepository.save(createSolved(3600, SolveType.SELF, member, dpBronze));
+        solvedRepository.save(createSolved(7200, SolveType.SELF, member, dpGold));
+        solvedRepository.save(createSolved(2000, SolveType.SELF, member, greedySilver));
+
+        //when
+        Map<TierGroup, List<TierAverage>> result = solvedFinder.findTierAverages(member.getName(), TagKey.DP);
+
+        //then
+        assertSoftly(softly -> {
+            softly.assertThat(result.get(TierGroup.BRONZE)).hasSize(5)
+                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount)
+                    .contains(tuple(Tier.B1, 3600.0, 1L));
+            softly.assertThat(result.get(TierGroup.GOLD)).hasSize(5)
+                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount)
+                    .contains(tuple(Tier.G3, 7200.0, 1L));
+            // 그리디 문제는 DP 태그 필터에 포함되지 않아야 함
+            softly.assertThat(result.get(TierGroup.SILVER)).hasSize(5)
+                    .extracting(TierAverage::averageSolvedSeconds)
+                    .containsOnly((Double) null);
+        });
     }
 
     @Test

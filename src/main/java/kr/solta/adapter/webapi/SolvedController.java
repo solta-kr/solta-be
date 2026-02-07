@@ -66,8 +66,11 @@ public class SolvedController {
     }
 
     @GetMapping("/members/solveds/tier/average-time/search")
-    public ResponseEntity<Map<TierGroup, List<TierAverage>>> findTierAverageTime(@RequestParam final String name) {
-        Map<TierGroup, List<TierAverage>> response = solvedFinder.findTierAverages(name);
+    public ResponseEntity<Map<TierGroup, List<TierAverage>>> findTierAverageTime(
+            @RequestParam final String name,
+            @RequestParam(required = false) final TagKey tagKey
+    ) {
+        Map<TierGroup, List<TierAverage>> response = solvedFinder.findTierAverages(name, tagKey);
 
         return ResponseEntity.ok(response);
     }

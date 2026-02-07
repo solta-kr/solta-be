@@ -13,7 +13,7 @@ public interface SolvedFinder {
 
     List<TierGroupAverage> findTierGroupAverages(final String name, final TagKey tagKey);
 
-    Map<TierGroup, List<TierAverage>> findTierAverages(final String name);
+    Map<TierGroup, List<TierAverage>> findTierAverages(final String name, final TagKey tagKey);
 
     List<SolvedWithTags> findSolvedWithTags(final String name);
 
