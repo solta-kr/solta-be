@@ -3,11 +3,13 @@ package kr.solta.adapter.webapi;
 import java.time.LocalDateTime;
 import kr.solta.adapter.webapi.resolver.Auth;
 import kr.solta.adapter.webapi.response.MemberResponse;
+import kr.solta.adapter.webapi.response.MemberSearchResponse;
 import kr.solta.application.provided.MemberReader;
 import kr.solta.application.provided.SolvedStatisticsReader;
 import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.request.TagKey;
 import kr.solta.application.provided.response.IndependentSolveTrendsResponse;
+import kr.solta.application.provided.response.MemberPage;
 import kr.solta.application.provided.response.MemberProfileResponse;
 import kr.solta.application.provided.response.SolveTimeTrendsResponse;
 import kr.solta.domain.Member;
@@ -28,6 +30,16 @@ public class MemberController {
 
     private final MemberReader memberReader;
     private final SolvedStatisticsReader solvedStatisticsReader;
+
+    @GetMapping("/search")
+    public ResponseEntity<MemberSearchResponse> searchMembers(
+            @RequestParam(required = false) final String query,
+            @RequestParam(required = false) final Long lastMemberId
+    ) {
+        MemberPage page = memberReader.searchMembers(query, lastMemberId);
+
+        return ResponseEntity.ok(MemberSearchResponse.from(page));
+    }
 
     @GetMapping("/me")
     public ResponseEntity<MemberResponse> getMyInfo(@Auth final AuthMember authMember) {
