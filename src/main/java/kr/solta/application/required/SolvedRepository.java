@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import kr.solta.application.required.dto.AllSolvedAverage;
 import kr.solta.application.required.dto.IndependentRatioData;
+import kr.solta.application.required.dto.ProblemSolvedStats;
 import kr.solta.application.required.dto.SolvedStats;
 import kr.solta.application.required.dto.TrendData;
 import kr.solta.domain.Member;
@@ -299,6 +300,18 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
             final List<Tier> tiers,
             final String tagKey
     );
+
+    @Query("""
+                SELECT new kr.solta.application.required.dto.ProblemSolvedStats(
+                    count(s.id),
+                    coalesce(sum(case when s.solveType = kr.solta.domain.SolveType.SELF then 1 else 0 end), 0),
+                    avg(s.solveTimeSeconds),
+                    min(s.solveTimeSeconds)
+                )
+                FROM Solved s
+                WHERE s.problem = :problem
+            """)
+    ProblemSolvedStats findProblemSolvedStats(Problem problem);
 
     @EntityGraph(attributePaths = "problem")
     List<Solved> findByMemberAndSolveTypeOrderBySolvedTimeDesc(final Member member, final SolveType solveType);

@@ -3,11 +3,15 @@ package kr.solta.application;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import kr.solta.application.exception.NotFoundEntityException;
 import kr.solta.application.provided.ProblemFinder;
+import kr.solta.application.provided.response.ProblemDetail;
 import kr.solta.application.provided.response.ProblemPage;
 import kr.solta.application.provided.response.ProblemWithTags;
 import kr.solta.application.required.ProblemRepository;
 import kr.solta.application.required.ProblemTagRepository;
+import kr.solta.application.required.SolvedRepository;
+import kr.solta.application.required.dto.ProblemSolvedStats;
 import kr.solta.domain.Problem;
 import kr.solta.domain.ProblemTag;
 import kr.solta.domain.Tag;
@@ -25,6 +29,7 @@ public class ProblemService implements ProblemFinder {
 
     private final ProblemRepository problemRepository;
     private final ProblemTagRepository problemTagRepository;
+    private final SolvedRepository solvedRepository;
 
     @Override
     public ProblemPage searchProblems(final String query, final Long lastBojProblemId) {
@@ -55,6 +60,20 @@ public class ProblemService implements ProblemFinder {
                 .toList();
 
         return new ProblemPage(problemWithTags, hasNext);
+    }
+
+    @Override
+    public ProblemDetail findProblemDetail(final long bojProblemId) {
+        Problem problem = problemRepository.findByBojProblemId(bojProblemId)
+                .orElseThrow(() -> new NotFoundEntityException(
+                        "백준 문제 번호: " + bojProblemId + " 에 해당하는 문제가 존재하지 않습니다."));
+
+        List<Tag> tags = getTagsByProblem(List.of(problem))
+                .getOrDefault(problem, List.of());
+
+        ProblemSolvedStats solvedStats = solvedRepository.findProblemSolvedStats(problem);
+
+        return new ProblemDetail(problem, tags, solvedStats);
     }
 
     private Map<Problem, List<Tag>> getTagsByProblem(final List<Problem> problems) {

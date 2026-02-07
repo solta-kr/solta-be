@@ -1,15 +1,23 @@
 package kr.solta.application.provided;
 
+import static kr.solta.support.TestFixtures.createMember;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import kr.solta.application.provided.response.ProblemDetail;
 import kr.solta.application.provided.response.ProblemPage;
 import kr.solta.application.provided.response.ProblemWithTags;
+import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.ProblemRepository;
 import kr.solta.application.required.ProblemTagRepository;
+import kr.solta.application.required.SolvedRepository;
 import kr.solta.application.required.TagRepository;
+import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.ProblemTag;
+import kr.solta.domain.SolveType;
+import kr.solta.domain.Solved;
 import kr.solta.domain.Tag;
 import kr.solta.domain.Tier;
 import kr.solta.support.IntegrationTest;
@@ -29,6 +37,12 @@ class ProblemFinderTest extends IntegrationTest {
 
     @Autowired
     private ProblemTagRepository problemTagRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
+    private SolvedRepository solvedRepository;
 
     @Test
     void 검색어_없이_전체_문제를_조회할_수_있다() {
@@ -199,6 +213,77 @@ class ProblemFinderTest extends IntegrationTest {
         assertThat(result.problems())
                 .extracting(pwt -> pwt.problem().getBojProblemId())
                 .containsExactly(1003L, 2579L, 9095L, 11726L);
+    }
+
+    @Test
+    void 백준_문제_번호로_문제_상세_정보를_조회할_수_있다() {
+        //given
+        Problem problem = createProblem("피보나치 함수", 1003L, Tier.S3);
+        Tag dpTag = createTag(1, "dp", "DP");
+        Tag mathTag = createTag(2, "math", "수학");
+        createProblemTag(problem, dpTag);
+        createProblemTag(problem, mathTag);
+
+        //when
+        ProblemDetail detail = problemFinder.findProblemDetail(1003L);
+
+        //then
+        assertSoftly(softly -> {
+            softly.assertThat(detail.problem().getBojProblemId()).isEqualTo(1003L);
+            softly.assertThat(detail.problem().getTitle()).isEqualTo("피보나치 함수");
+            softly.assertThat(detail.problem().getTier()).isEqualTo(Tier.S3);
+            softly.assertThat(detail.tags()).extracting(Tag::getKorName)
+                    .containsExactlyInAnyOrder("DP", "수학");
+        });
+    }
+
+    @Test
+    void 문제_상세_조회시_풀이_통계를_함께_반환한다() {
+        //given
+        Problem problem = createProblem("피보나치 함수", 1003L, Tier.S3);
+        Member member1 = memberRepository.save(createMember(1L, "user1"));
+        Member member2 = memberRepository.save(createMember(2L, "user2"));
+        Member member3 = memberRepository.save(createMember(3L, "user3"));
+
+        solvedRepository.save(Solved.register(1200, SolveType.SELF, member1, problem, java.time.LocalDateTime.now()));
+        solvedRepository.save(Solved.register(1800, SolveType.SELF, member2, problem, java.time.LocalDateTime.now()));
+        solvedRepository.save(Solved.register(600, SolveType.SOLUTION, member3, problem, java.time.LocalDateTime.now()));
+
+        //when
+        ProblemDetail detail = problemFinder.findProblemDetail(1003L);
+
+        //then
+        assertSoftly(softly -> {
+            softly.assertThat(detail.solvedStats().totalSolvedCount()).isEqualTo(3L);
+            softly.assertThat(detail.solvedStats().independentSolvedCount()).isEqualTo(2L);
+            softly.assertThat(detail.solvedStats().averageSolveTimeSeconds()).isEqualTo(1200.0);
+            softly.assertThat(detail.solvedStats().shortestSolveTimeSeconds()).isEqualTo(600);
+        });
+    }
+
+    @Test
+    void 풀이_기록이_없는_문제의_통계는_0과_null을_반환한다() {
+        //given
+        createProblem("새 문제", 9999L, Tier.G1);
+
+        //when
+        ProblemDetail detail = problemFinder.findProblemDetail(9999L);
+
+        //then
+        assertSoftly(softly -> {
+            softly.assertThat(detail.solvedStats().totalSolvedCount()).isEqualTo(0L);
+            softly.assertThat(detail.solvedStats().independentSolvedCount()).isEqualTo(0L);
+            softly.assertThat(detail.solvedStats().averageSolveTimeSeconds()).isNull();
+            softly.assertThat(detail.solvedStats().shortestSolveTimeSeconds()).isNull();
+        });
+    }
+
+    @Test
+    void 존재하지_않는_백준_문제_번호로_조회시_예외가_발생한다() {
+        //when & then
+        assertThatThrownBy(() -> problemFinder.findProblemDetail(99999L))
+                .isInstanceOf(Exception.class)
+                .hasMessageContaining("존재하지 않습니다");
     }
 
     private Problem createProblem(String title, long bojProblemId, Tier tier) {
