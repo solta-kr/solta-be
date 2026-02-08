@@ -25,8 +25,8 @@ public class Solved extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private int solveTimeSeconds;
+    @Column
+    private Integer solveTimeSeconds;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -38,11 +38,11 @@ public class Solved extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Problem problem;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime solvedTime;
 
     public static Solved register(
-            int solveTimeSeconds,
+            Integer solveTimeSeconds,
             SolveType solveType,
             Member member,
             Problem problem,
@@ -50,7 +50,7 @@ public class Solved extends BaseEntity {
     ) {
         Solved solved = new Solved();
 
-        solved.solveTimeSeconds = solveTimeSeconds;
+        solved.solveTimeSeconds = solveType == SolveType.SELF ? requireNonNull(solveTimeSeconds) : solveTimeSeconds;
         solved.solveType = requireNonNull(solveType);
         solved.member = requireNonNull(member);
         solved.problem = requireNonNull(problem);
