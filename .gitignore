@@ -39,3 +39,4 @@ out/
 src/main/resources/db.yml
 src/main/resources/oauth.yml
 src/main/resources/client.yml
+src/main/resources/security.yml
