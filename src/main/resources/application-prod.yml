@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${db.prod.host}:${db.prod.port}/${db.prod.name}?allowLoadLocalInfile=true
+    username: ${db.prod.username}
+    password: ${db.prod.password}
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 10
+      connection-timeout: 3000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+oauth:
+  github:
+    loginUrl: https://github.com/login/oauth/authorize?client_id=${oauth.github.prod.clientId}&redirect_uri=${oauth.github.prod.redirectUrl}
+    clientId: ${oauth.github.prod.clientId}
+    clientSecret: ${oauth.github.prod.clientSecret}
+    redirectUrl: ${oauth.github.prod.redirectUrl}
+    clientSuccessUrl: ${oauth.github.prod.clientSuccessUrl}
+
+security:
+  jwt:
+    secret-key: ${security.jwt.local.secret-key}
+    expire-duration: 14d
+
+client:
+  extension-id: ${client.prod.extension-id}
+  web-url: ${client.prod.web-url}
