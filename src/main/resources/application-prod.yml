@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${db.prod.host}:${db.prod.port}/${db.prod.name}?allowLoadLocalInfile=true
+    url: jdbc:mysql://${db.prod.host}:${db.prod.port}/${db.prod.name}
     username: ${db.prod.username}
     password: ${db.prod.password}
     hikari:
@@ -12,6 +12,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+  flyway:
+    enabled: true
 
 oauth:
   github:

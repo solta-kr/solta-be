@@ -9,6 +9,8 @@ spring:
     hibernate:
       ddl-auto: create
     defer-datasource-initialization: true
+  flyway:
+    enabled: false
   sql:
     init:
       mode: always
