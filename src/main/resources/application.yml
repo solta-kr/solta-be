@@ -2,9 +2,9 @@ spring:
   application.name: solta
   config:
     import:
-      - db.yml
-      - oauth.yml
-      - security.yml
-      - client.yml
+      - security/db.yml
+      - security/oauth.yml
+      - security/security.yml
+      - security/client.yml
   profiles:
     default: local
