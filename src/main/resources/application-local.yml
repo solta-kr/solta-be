@@ -31,3 +31,8 @@ security:
 client:
   extension-id: ${client.local.extension-id}
   web-url: ${client.local.web-url}
+
+cors:
+  allowed-origins:
+    - http://localhost:5173
+    - chrome-extension://*

@@ -31,3 +31,8 @@ security:
 client:
   extension-id: ${client.prod.extension-id}
   web-url: ${client.prod.web-url}
+
+cors:
+  allowed-origins:
+    - https://solta.kr
+    - chrome-extension://*
