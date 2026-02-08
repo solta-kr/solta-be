@@ -2,7 +2,7 @@ package kr.solta.application.required.dto;
 
 public record AllSolvedAverage(
         Long solvedCount,
-        Long totalSolvedTime,
+        long totalSolvedTime,
         Double totalSolvedAverageTime
 ) {
 }

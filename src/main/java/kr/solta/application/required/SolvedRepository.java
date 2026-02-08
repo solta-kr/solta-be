@@ -24,7 +24,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     List<Solved> findByMemberOrderByCreatedAtDesc(Member member);
 
     @Query("""
-                select new kr.solta.domain.SolvedAverage(s.problem, avg(s.solveTimeSeconds))
+                select new kr.solta.domain.SolvedAverage(s.problem, avg(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end))
                 from Solved s
                 where s.problem in :problems
                 group by s.problem.id
@@ -34,7 +34,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     @Query("""
                 select new kr.solta.application.required.dto.SolvedStats(
                     count(s.id),
-                    avg(s.solveTimeSeconds),
+                    avg(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end),
                     coalesce(sum(case when s.solveType = kr.solta.domain.SolveType.SELF then 1 else 0 end), 0)
                 )
                 from Solved s
@@ -45,7 +45,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     @Query("""
                 select new kr.solta.application.required.dto.SolvedStats(
                     count(distinct s.id),
-                    avg(s.solveTimeSeconds),
+                    avg(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end),
                     coalesce(sum(case when s.solveType = kr.solta.domain.SolveType.SELF then 1 else 0 end), 0)
                 )
                 from Solved s
@@ -57,7 +57,12 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     SolvedStats calculateTierGroupAverageByMemberAndTag(Member member, List<Tier> tiers, String tagKey);
 
     @Query("""
-                select new kr.solta.domain.TierAverage(s.problem.tier, avg(s.solveTimeSeconds), count(s.id))
+                select new kr.solta.domain.TierAverage(
+                            s.problem.tier,
+                            avg(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end), 
+                            count(s.id),
+                            coalesce(sum(case when s.solveType = kr.solta.domain.SolveType.SELF then 1 else 0 end), 0)
+                )
                 from Solved s
                 where s.member = :member
                 group by s.problem.tier
@@ -65,7 +70,12 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     List<TierAverage> findTierAverageByMember(Member member);
 
     @Query("""
-                select new kr.solta.domain.TierAverage(s.problem.tier, avg(s.solveTimeSeconds), count(distinct s.id))
+                select new kr.solta.domain.TierAverage(
+                            s.problem.tier,
+                            avg(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end),
+                            count(distinct s.id),
+                            coalesce(sum(case when s.solveType = kr.solta.domain.SolveType.SELF then 1 else 0 end), 0)
+                )
                 from Solved s
                 join s.problem p
                 join ProblemTag pt on pt.problem = p
@@ -76,7 +86,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     List<TierAverage> findTierAverageByMemberAndTag(Member member, String tagKey);
 
     @Query("""
-                select new kr.solta.application.required.dto.AllSolvedAverage(count(s.id), sum (s.solveTimeSeconds), avg(s.solveTimeSeconds))
+                select new kr.solta.application.required.dto.AllSolvedAverage(count(s.id), coalesce(sum(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else 0 end), 0), avg(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end))
                 from Solved s
                 where s.member = :member
             """)
@@ -90,6 +100,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 )
                 FROM Solved s
                 WHERE s.member.id = :memberId
+                AND s.solveType = kr.solta.domain.SolveType.SELF
                 AND (:startDate IS NULL OR s.solvedTime >= :startDate)
                 GROUP BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
                 ORDER BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
@@ -108,6 +119,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 )
                 FROM Solved s
                 WHERE s.member.id = :memberId
+                AND s.solveType = kr.solta.domain.SolveType.SELF
                 AND (:startDate IS NULL OR s.solvedTime >= :startDate)
                 AND s.problem.tier IN :tiers
                 GROUP BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
@@ -155,6 +167,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 JOIN ProblemTag pt ON pt.problem = p
                 JOIN pt.tag t
                 WHERE s.member.id = :memberId
+                AND s.solveType = kr.solta.domain.SolveType.SELF
                 AND (:startDate IS NULL OR s.solvedTime >= :startDate)
                 AND t.key = :tagKey
                 GROUP BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
@@ -178,6 +191,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 JOIN ProblemTag pt ON pt.problem = p
                 JOIN pt.tag t
                 WHERE s.member.id = :memberId
+                AND s.solveType = kr.solta.domain.SolveType.SELF
                 AND (:startDate IS NULL OR s.solvedTime >= :startDate)
                 AND s.problem.tier IN :tiers
                 AND t.key = :tagKey
@@ -316,8 +330,8 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 SELECT new kr.solta.application.required.dto.ProblemSolvedStats(
                     count(s.id),
                     coalesce(sum(case when s.solveType = kr.solta.domain.SolveType.SELF then 1 else 0 end), 0),
-                    avg(s.solveTimeSeconds),
-                    min(s.solveTimeSeconds)
+                    avg(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end),
+                    min(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end)
                 )
                 FROM Solved s
                 WHERE s.problem = :problem

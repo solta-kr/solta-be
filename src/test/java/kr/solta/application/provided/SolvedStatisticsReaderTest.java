@@ -85,25 +85,19 @@ class SolvedStatisticsReaderTest extends IntegrationTest {
             softly.assertThat(response.period()).isEqualTo("1주");
             softly.assertThat(response.tierGroup()).isEqualTo("NONE");
             softly.assertThat(response.totalSolvedCount()).isEqualTo(5L);
-            softly.assertThat(response.trends()).hasSize(3);
+            softly.assertThat(response.trends()).hasSize(2); // 1월 9일은 SOLUTION만 있으므로 제외
 
-            // 1월 8일
+            // 1월 8일: SELF 2개 (3600초, 1800초)
             TrendPoint day1 = response.trends().get(0);
             softly.assertThat(day1.date()).isEqualTo("2024-01-08");
             softly.assertThat(day1.averageSeconds()).isEqualTo((3600.0 + 1800.0) / 2);
             softly.assertThat(day1.solvedCount()).isEqualTo(2L);
 
-            // 1월 9일
+            // 1월 10일: SELF 2개 (2400초, 3000초)
             TrendPoint day2 = response.trends().get(1);
-            softly.assertThat(day2.date()).isEqualTo("2024-01-09");
-            softly.assertThat(day2.averageSeconds()).isEqualTo(5400.0);
-            softly.assertThat(day2.solvedCount()).isEqualTo(1L);
-
-            // 1월 10일
-            TrendPoint day3 = response.trends().get(2);
-            softly.assertThat(day3.date()).isEqualTo("2024-01-10");
-            softly.assertThat(day3.averageSeconds()).isEqualTo((2400.0 + 3000.0) / 2);
-            softly.assertThat(day3.solvedCount()).isEqualTo(2L);
+            softly.assertThat(day2.date()).isEqualTo("2024-01-10");
+            softly.assertThat(day2.averageSeconds()).isEqualTo((2400.0 + 3000.0) / 2);
+            softly.assertThat(day2.solvedCount()).isEqualTo(2L);
         });
     }
 

@@ -141,10 +141,10 @@ class SolvedFinderTest extends IntegrationTest {
         Problem goldProblem3 = problemRepository.save(createProblem("골드3", 1004L, Tier.G3));
 
         solvedRepository.save(createSolved(3600, SolveType.SELF, member, bronzeProblem1));
-        solvedRepository.save(createSolved(1800, SolveType.SELF, member, bronzeProblem3));
+        solvedRepository.save(createSolved(1800, SolveType.SOLUTION, member, bronzeProblem3));
         solvedRepository.save(createSolved(5400, SolveType.SELF, member, silverProblem2));
         solvedRepository.save(createSolved(7200, SolveType.SELF, member, goldProblem1));
-        solvedRepository.save(createSolved(4800, SolveType.SELF, member, goldProblem3));
+        solvedRepository.save(createSolved(4800, SolveType.SOLUTION, member, goldProblem3));
 
         //when
         Map<TierGroup, List<TierAverage>> result = solvedFinder.findTierAverages(member.getName(), null);
@@ -153,22 +153,22 @@ class SolvedFinderTest extends IntegrationTest {
         assertSoftly(softly -> {
             softly.assertThat(result).hasSize(TierGroup.values().length);
             softly.assertThat(result.get(TierGroup.BRONZE)).hasSize(5)
-                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount)
+                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount, TierAverage::independentCount)
                     .containsExactly(
-                            tuple(Tier.B5, null, 0L),
-                            tuple(Tier.B4, null, 0L),
-                            tuple(Tier.B3, 1800.0, 1L),
-                            tuple(Tier.B2, null, 0L),
-                            tuple(Tier.B1, 3600.0, 1L)
+                            tuple(Tier.B5, null, 0L, 0L),
+                            tuple(Tier.B4, null, 0L, 0L),
+                            tuple(Tier.B3, null, 1L, 0L),  // SOLUTION만 → 평균 null, 독립 0
+                            tuple(Tier.B2, null, 0L, 0L),
+                            tuple(Tier.B1, 3600.0, 1L, 1L)  // SELF → 평균 3600, 독립 1
                     );
             softly.assertThat(result.get(TierGroup.GOLD)).hasSize(5)
-                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount)
+                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount, TierAverage::independentCount)
                     .containsExactly(
-                            tuple(Tier.G5, null, 0L),
-                            tuple(Tier.G4, null, 0L),
-                            tuple(Tier.G3, 4800.0, 1L),
-                            tuple(Tier.G2, null, 0L),
-                            tuple(Tier.G1, 7200.0, 1L)
+                            tuple(Tier.G5, null, 0L, 0L),
+                            tuple(Tier.G4, null, 0L, 0L),
+                            tuple(Tier.G3, null, 1L, 0L),  // SOLUTION만 → 평균 null, 독립 0
+                            tuple(Tier.G2, null, 0L, 0L),
+                            tuple(Tier.G1, 7200.0, 1L, 1L)  // SELF → 평균 7200, 독립 1
                     );
         });
     }
@@ -351,7 +351,7 @@ class SolvedFinderTest extends IntegrationTest {
         createProblemTag(greedySilver, greedyTag);
 
         solvedRepository.save(createSolved(3600, SolveType.SELF, member, dpBronze));
-        solvedRepository.save(createSolved(7200, SolveType.SELF, member, dpGold));
+        solvedRepository.save(createSolved(7200, SolveType.SOLUTION, member, dpGold));
         solvedRepository.save(createSolved(2000, SolveType.SELF, member, greedySilver));
 
         //when
@@ -360,11 +360,11 @@ class SolvedFinderTest extends IntegrationTest {
         //then
         assertSoftly(softly -> {
             softly.assertThat(result.get(TierGroup.BRONZE)).hasSize(5)
-                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount)
-                    .contains(tuple(Tier.B1, 3600.0, 1L));
+                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount, TierAverage::independentCount)
+                    .contains(tuple(Tier.B1, 3600.0, 1L, 1L));  // SELF
             softly.assertThat(result.get(TierGroup.GOLD)).hasSize(5)
-                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount)
-                    .contains(tuple(Tier.G3, 7200.0, 1L));
+                    .extracting(TierAverage::tier, TierAverage::averageSolvedSeconds, TierAverage::solvedCount, TierAverage::independentCount)
+                    .contains(tuple(Tier.G3, null, 1L, 0L));  // SOLUTION만 → 평균 null, 독립 0
             // 그리디 문제는 DP 태그 필터에 포함되지 않아야 함
             softly.assertThat(result.get(TierGroup.SILVER)).hasSize(5)
                     .extracting(TierAverage::averageSolvedSeconds)
@@ -428,7 +428,7 @@ class SolvedFinderTest extends IntegrationTest {
                 .filter(avg -> avg.tierGroup() == TierGroup.SILVER)
                 .findFirst()
                 .orElseThrow();
-        assertThat(silver.averageSolvedSeconds()).isEqualTo(3600.0);
+        assertThat(silver.averageSolvedSeconds()).isNull();  // SOLUTION만 있으므로 SELF 평균은 null
         assertThat(silver.solvedCount()).isEqualTo(1L);
         assertThat(silver.independentSolvedCount()).isEqualTo(0L);  // SOLUTION
 

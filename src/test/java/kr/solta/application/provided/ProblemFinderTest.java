@@ -256,8 +256,8 @@ class ProblemFinderTest extends IntegrationTest {
         assertSoftly(softly -> {
             softly.assertThat(detail.solvedStats().totalSolvedCount()).isEqualTo(3L);
             softly.assertThat(detail.solvedStats().independentSolvedCount()).isEqualTo(2L);
-            softly.assertThat(detail.solvedStats().averageSolveTimeSeconds()).isEqualTo(1200.0);
-            softly.assertThat(detail.solvedStats().shortestSolveTimeSeconds()).isEqualTo(600);
+            softly.assertThat(detail.solvedStats().averageSolveTimeSeconds()).isEqualTo(1500.0); // SELF만: (1200+1800)/2
+            softly.assertThat(detail.solvedStats().shortestSolveTimeSeconds()).isEqualTo(1200); // SELF만
         });
     }
 

@@ -20,7 +20,7 @@ public record MemberProfileResponse(
                 member.getBojId(),
                 member.getAvatarUrl(),
                 allSolvedAverage.solvedCount() == null ? 0 : allSolvedAverage.solvedCount(),
-                allSolvedAverage.totalSolvedTime() == null ? 0 : allSolvedAverage.totalSolvedTime(),
+                allSolvedAverage.totalSolvedTime(),
                 allSolvedAverage.totalSolvedAverageTime() == null ? 0 : allSolvedAverage.totalSolvedAverageTime()
         );
     }
