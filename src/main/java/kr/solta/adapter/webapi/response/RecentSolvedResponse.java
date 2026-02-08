@@ -11,7 +11,7 @@ import kr.solta.domain.Tier;
 public record RecentSolvedResponse(
         Long solvedId,
         SolveType solveType,
-        int solveTimeSeconds,
+        Integer solveTimeSeconds,
         ProblemDetail problem,
         LocalDateTime createdAt
 ) {
@@ -26,7 +26,7 @@ public record RecentSolvedResponse(
 
     public static RecentSolvedResponse from(SolvedWithTags solvedWithTags) {
         Solved solved = solvedWithTags.solved();
-        
+
         return new RecentSolvedResponse(
                 solved.getId(),
                 solved.getSolveType(),

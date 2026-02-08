@@ -264,8 +264,8 @@ ON DUPLICATE KEY UPDATE name = name;
 -- 테스트용 Solved 데이터 추가 (그래프 테스트용)
 -- 최근 7일 데이터 (일별) - 문제가 있는 경우에만 실행
 INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, solved_time, created_at, updated_at)
-SELECT FLOOR(300 + RAND() * 1800)                             as solve_time_seconds, -- 5분 ~ 30분
-       CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+SELECT CASE WHEN t.has_time = 1 THEN FLOOR(300 + RAND() * 1800) ELSE NULL END as solve_time_seconds,
+       t.solve_type                                           as solve_type,
        1                                                      as member_id,
        (SELECT id
         FROM problem
@@ -275,23 +275,30 @@ SELECT FLOOR(300 + RAND() * 1800)                             as solve_time_seco
        DATE_SUB(NOW(), INTERVAL 1 DAY)                        as solved_time,
        DATE_SUB(NOW(), INTERVAL 1 DAY)                        as created_at,
        NOW()                                                  as updated_at
-FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) as t
+FROM (SELECT 1 as n, 'SELF' as solve_type, 1 as has_time
+      UNION SELECT 2, 'SELF', 1
+      UNION SELECT 3, 'SELF', 1
+      UNION SELECT 4, 'SOLUTION', 1
+      UNION SELECT 5, 'SOLUTION', 0) as t
 WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
 
 INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, solved_time, created_at, updated_at)
-SELECT FLOOR(400 + RAND() * 2000)                                                                    as solve_time_seconds,
-       CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END                                        as solve_type,
-       1                                                                                             as member_id,
+SELECT CASE WHEN t.has_time = 1 THEN FLOOR(400 + RAND() * 2000) ELSE NULL END                         as solve_time_seconds,
+       t.solve_type                                                                                   as solve_type,
+       1                                                                                              as member_id,
        (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'S1', 'S2', 'G1') ORDER BY RAND() LIMIT 1) as problem_id,
-       DATE_SUB(NOW(), INTERVAL 2 DAY)                                                               as solved_time,
-       DATE_SUB(NOW(), INTERVAL 2 DAY)                                                               as created_at,
-       NOW()                                                                                         as updated_at
-FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) as t
+       DATE_SUB(NOW(), INTERVAL 2 DAY)                                                                as solved_time,
+       DATE_SUB(NOW(), INTERVAL 2 DAY)                                                                as created_at,
+       NOW()                                                                                          as updated_at
+FROM (SELECT 1 as n, 'SELF' as solve_type, 1 as has_time
+      UNION SELECT 2, 'SELF', 1
+      UNION SELECT 3, 'SOLUTION', 1
+      UNION SELECT 4, 'SOLUTION', 0) as t
 WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
 
 INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, solved_time, created_at, updated_at)
-SELECT FLOOR(200 + RAND() * 1500)                             as solve_time_seconds,
-       CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+SELECT CASE WHEN t.has_time = 1 THEN FLOOR(200 + RAND() * 1500) ELSE NULL END as solve_time_seconds,
+       t.solve_type                                           as solve_type,
        1                                                      as member_id,
        (SELECT id
         FROM problem
@@ -301,12 +308,17 @@ SELECT FLOOR(200 + RAND() * 1500)                             as solve_time_seco
        DATE_SUB(NOW(), INTERVAL 3 DAY)                        as solved_time,
        DATE_SUB(NOW(), INTERVAL 3 DAY)                        as created_at,
        NOW()                                                  as updated_at
-FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6) as t
+FROM (SELECT 1 as n, 'SELF' as solve_type, 1 as has_time
+      UNION SELECT 2, 'SELF', 1
+      UNION SELECT 3, 'SELF', 1
+      UNION SELECT 4, 'SELF', 1
+      UNION SELECT 5, 'SOLUTION', 1
+      UNION SELECT 6, 'SOLUTION', 0) as t
 WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
 
 INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, solved_time, created_at, updated_at)
-SELECT FLOOR(350 + RAND() * 1900)                             as solve_time_seconds,
-       CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+SELECT CASE WHEN t.has_time = 1 THEN FLOOR(350 + RAND() * 1900) ELSE NULL END as solve_time_seconds,
+       t.solve_type                                           as solve_type,
        1                                                      as member_id,
        (SELECT id
         FROM problem
@@ -316,46 +328,64 @@ SELECT FLOOR(350 + RAND() * 1900)                             as solve_time_seco
        DATE_SUB(NOW(), INTERVAL 4 DAY)                        as solved_time,
        DATE_SUB(NOW(), INTERVAL 4 DAY)                        as created_at,
        NOW()                                                  as updated_at
-FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) as t
+FROM (SELECT 1 as n, 'SELF' as solve_type, 1 as has_time
+      UNION SELECT 2, 'SELF', 1
+      UNION SELECT 3, 'SOLUTION', 1
+      UNION SELECT 4, 'SOLUTION', 0) as t
 WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
 
 INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, solved_time, created_at, updated_at)
-SELECT FLOOR(250 + RAND() * 1600)                                                                    as solve_time_seconds,
-       CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END                                        as solve_type,
-       1                                                                                             as member_id,
+SELECT CASE WHEN t.has_time = 1 THEN FLOOR(250 + RAND() * 1600) ELSE NULL END                         as solve_time_seconds,
+       t.solve_type                                                                                   as solve_type,
+       1                                                                                              as member_id,
        (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'S1', 'S2', 'G1') ORDER BY RAND() LIMIT 1) as problem_id,
-       DATE_SUB(NOW(), INTERVAL 5 DAY)                                                               as solved_time,
-       DATE_SUB(NOW(), INTERVAL 5 DAY)                                                               as created_at,
-       NOW()                                                                                         as updated_at
-FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) as t
+       DATE_SUB(NOW(), INTERVAL 5 DAY)                                                                as solved_time,
+       DATE_SUB(NOW(), INTERVAL 5 DAY)                                                                as created_at,
+       NOW()                                                                                          as updated_at
+FROM (SELECT 1 as n, 'SELF' as solve_type, 1 as has_time
+      UNION SELECT 2, 'SELF', 1
+      UNION SELECT 3, 'SELF', 1
+      UNION SELECT 4, 'SOLUTION', 1
+      UNION SELECT 5, 'SOLUTION', 0) as t
 WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
 
 INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, solved_time, created_at, updated_at)
-SELECT FLOOR(300 + RAND() * 1700)                                                                    as solve_time_seconds,
-       CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END                                        as solve_type,
-       1                                                                                             as member_id,
+SELECT CASE WHEN t.has_time = 1 THEN FLOOR(300 + RAND() * 1700) ELSE NULL END                         as solve_time_seconds,
+       t.solve_type                                                                                   as solve_type,
+       1                                                                                              as member_id,
        (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'B3', 'S1', 'S2') ORDER BY RAND() LIMIT 1) as problem_id,
-       DATE_SUB(NOW(), INTERVAL 6 DAY)                                                               as solved_time,
-       DATE_SUB(NOW(), INTERVAL 6 DAY)                                                               as created_at,
-       NOW()                                                                                         as updated_at
-FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) as t
+       DATE_SUB(NOW(), INTERVAL 6 DAY)                                                                as solved_time,
+       DATE_SUB(NOW(), INTERVAL 6 DAY)                                                                as created_at,
+       NOW()                                                                                          as updated_at
+FROM (SELECT 1 as n, 'SELF' as solve_type, 1 as has_time
+      UNION SELECT 2, 'SELF', 1
+      UNION SELECT 3, 'SOLUTION', 1
+      UNION SELECT 4, 'SOLUTION', 0) as t
 WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
 
 INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, solved_time, created_at, updated_at)
-SELECT FLOOR(280 + RAND() * 1400)                                                                    as solve_time_seconds,
-       CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END                                        as solve_type,
-       1                                                                                             as member_id,
+SELECT CASE WHEN t.has_time = 1 THEN FLOOR(280 + RAND() * 1400) ELSE NULL END                         as solve_time_seconds,
+       t.solve_type                                                                                   as solve_type,
+       1                                                                                              as member_id,
        (SELECT id FROM problem WHERE tier IN ('B1', 'B2', 'S1', 'S2', 'G1') ORDER BY RAND() LIMIT 1) as problem_id,
-       DATE_SUB(NOW(), INTERVAL 7 DAY)                                                               as solved_time,
-       DATE_SUB(NOW(), INTERVAL 7 DAY)                                                               as created_at,
-       NOW()                                                                                         as updated_at
-FROM (SELECT 1 as n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) as t
+       DATE_SUB(NOW(), INTERVAL 7 DAY)                                                                as solved_time,
+       DATE_SUB(NOW(), INTERVAL 7 DAY)                                                                as created_at,
+       NOW()                                                                                          as updated_at
+FROM (SELECT 1 as n, 'SELF' as solve_type, 1 as has_time
+      UNION SELECT 2, 'SELF', 1
+      UNION SELECT 3, 'SELF', 1
+      UNION SELECT 4, 'SOLUTION', 1
+      UNION SELECT 5, 'SOLUTION', 0) as t
 WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
 
 -- 최근 30일 데이터 (일별, 7일 이후)
 INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, solved_time, created_at, updated_at)
-SELECT FLOOR(400 + RAND() * 2000)                             as solve_time_seconds,
-       CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+SELECT CASE
+           WHEN c.c <= 2 THEN FLOOR(400 + RAND() * 2000)     -- SELF: 항상 시간 있음
+           WHEN c.c = 3 AND RAND() > 0.5 THEN FLOOR(400 + RAND() * 2000) -- SOLUTION: 50% 시간 있음
+           ELSE NULL                                          -- SOLUTION: 50% null
+       END                                                    as solve_time_seconds,
+       CASE WHEN c.c <= 2 THEN 'SELF' ELSE 'SOLUTION' END    as solve_type,
        1                                                      as member_id,
        (SELECT id
         FROM problem
@@ -391,8 +421,12 @@ WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
 
 -- 최근 3개월 데이터 (주별)
 INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, solved_time, created_at, updated_at)
-SELECT FLOOR(500 + RAND() * 2500)                             as solve_time_seconds,
-       CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+SELECT CASE
+           WHEN c.c <= 5 THEN FLOOR(500 + RAND() * 2500)     -- SELF: 항상 시간 있음
+           WHEN c.c <= 7 THEN FLOOR(500 + RAND() * 2500)     -- SOLUTION: 시간 있음
+           ELSE NULL                                          -- SOLUTION: null
+       END                                                    as solve_time_seconds,
+       CASE WHEN c.c <= 5 THEN 'SELF' ELSE 'SOLUTION' END    as solve_type,
        1                                                      as member_id,
        (SELECT id
         FROM problem
@@ -444,8 +478,12 @@ WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
 
 -- 최근 6개월 데이터 (주별, 3개월 이후)
 INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, solved_time, created_at, updated_at)
-SELECT FLOOR(600 + RAND() * 3000)                             as solve_time_seconds,
-       CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+SELECT CASE
+           WHEN c.c <= 4 THEN FLOOR(600 + RAND() * 3000)     -- SELF: 항상 시간 있음
+           WHEN c.c = 5 THEN FLOOR(600 + RAND() * 3000)      -- SOLUTION: 시간 있음
+           ELSE NULL                                          -- SOLUTION: null
+       END                                                    as solve_time_seconds,
+       CASE WHEN c.c <= 4 THEN 'SELF' ELSE 'SOLUTION' END    as solve_type,
        1                                                      as member_id,
        (SELECT id
         FROM problem
@@ -485,8 +523,12 @@ WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
 
 -- 전체 데이터 (월별, 6개월 이전)
 INSERT INTO solved (solve_time_seconds, solve_type, member_id, problem_id, solved_time, created_at, updated_at)
-SELECT FLOOR(800 + RAND() * 3500)                             as solve_time_seconds,
-       CASE WHEN RAND() > 0.3 THEN 'SELF' ELSE 'SOLUTION' END as solve_type,
+SELECT CASE
+           WHEN c.c <= 12 THEN FLOOR(800 + RAND() * 3500)    -- SELF: 항상 시간 있음
+           WHEN c.c <= 16 THEN FLOOR(800 + RAND() * 3500)    -- SOLUTION: 시간 있음
+           ELSE NULL                                          -- SOLUTION: null
+       END                                                    as solve_time_seconds,
+       CASE WHEN c.c <= 12 THEN 'SELF' ELSE 'SOLUTION' END   as solve_type,
        1                                                      as member_id,
        (SELECT id
         FROM problem
