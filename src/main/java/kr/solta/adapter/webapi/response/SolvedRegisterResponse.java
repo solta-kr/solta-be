@@ -6,7 +6,7 @@ import kr.solta.domain.Tier;
 
 public record SolvedRegisterResponse(
         long solvedId,
-        long solveTimeSeconds,
+        Integer solveTimeSeconds,
         ProblemDetail problem
 ) {
     record ProblemDetail(
@@ -18,7 +18,7 @@ public record SolvedRegisterResponse(
 
     public static SolvedRegisterResponse from(Solved solved) {
         Problem problem = solved.getProblem();
-        
+
         return new SolvedRegisterResponse(
                 solved.getId(),
                 solved.getSolveTimeSeconds(),
