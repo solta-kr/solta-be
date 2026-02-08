@@ -23,7 +23,7 @@ oauth:
 
 security:
   jwt:
-    secret-key: ${security.jwt.local.secret-key}
+    secret-key: ${security.jwt.prod.secret-key}
     expire-duration: 14d
 
 client:
