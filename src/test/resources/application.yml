@@ -12,6 +12,9 @@ spring:
     init:
       mode: never
 
+  flyway:
+    enabled: false
+
 oauth:
   github:
     loginUrl: testUrl
