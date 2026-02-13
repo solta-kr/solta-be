@@ -38,7 +38,6 @@ public class Solved extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Problem problem;
 
-    @Column(nullable = true)
     private LocalDateTime solvedTime;
 
     public static Solved register(
@@ -50,7 +49,7 @@ public class Solved extends BaseEntity {
     ) {
         Solved solved = new Solved();
 
-        solved.solveTimeSeconds = solveType == SolveType.SELF ? requireNonNull(solveTimeSeconds) : solveTimeSeconds;
+        solved.solveTimeSeconds = solveType == SolveType.SELF ? requireNonNull(solveTimeSeconds, "스스로 푼 경우 풀이 시간은 필수입니다.") : solveTimeSeconds;
         solved.solveType = requireNonNull(solveType);
         solved.member = requireNonNull(member);
         solved.problem = requireNonNull(problem);

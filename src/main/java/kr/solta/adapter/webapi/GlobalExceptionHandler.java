@@ -28,7 +28,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiErrorResponse> handleInternalServerError(final RuntimeException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        log.error("RuntimeException: {}", e.getMessage(), e);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ApiErrorResponse(e.getMessage()));
     }
 
@@ -38,7 +40,7 @@ public class GlobalExceptionHandler {
                 .body(new ApiErrorResponse(e.getMessage()));
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class, NullPointerException.class})
     public ResponseEntity<ApiErrorResponse> handleIllegalArgumentException(final RuntimeException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiErrorResponse(e.getMessage()));
