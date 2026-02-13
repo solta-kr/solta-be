@@ -11,4 +11,6 @@ public interface ProblemTagRepository extends JpaRepository<ProblemTag, Long> {
 
     @Query("SELECT pt FROM ProblemTag pt JOIN FETCH pt.tag WHERE pt.problem IN :problems")
     List<ProblemTag> findByProblemsWithTag(@Param("problems") List<Problem> problems);
+
+    List<ProblemTag> findAllByProblemIn(List<Problem> problems);
 }

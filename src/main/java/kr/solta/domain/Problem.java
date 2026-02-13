@@ -39,4 +39,9 @@ public class Problem extends BaseEntity {
         this.tier = tier;
         this.level = tier.getLevel();
     }
+
+    public void updateTier(final Tier tier) {
+        this.tier = tier;
+        this.level = tier.getLevel();
+    }
 }
