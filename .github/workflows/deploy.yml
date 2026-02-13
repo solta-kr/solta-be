@@ -3,7 +3,7 @@ name: Deploy To EC2
 on:
   push:
     branches:
-      - main
+      - disabled # 임시 비활성화 (원래: main)
 
 jobs:
   build:
