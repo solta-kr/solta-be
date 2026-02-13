@@ -36,3 +36,9 @@ cors:
   allowed-origins:
     - https://solta.kr
     - chrome-extension://*
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
