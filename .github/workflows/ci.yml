@@ -20,6 +20,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+          cache: gradle
 
       - name: 테스트 실행
         run: ./gradlew test
