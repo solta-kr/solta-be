@@ -29,8 +29,10 @@
                     <stackTrace>
                         <fieldName>stackTrace</fieldName>
                     </stackTrace>
+                    <pattern>
+                        <pattern>{"service":"solta-api-service","env":"prod"}</pattern>
+                    </pattern>
                 </providers>
-                <customFields>{"service":"dialog-api-service","env":"prod"}</customFields>
             </encoder>
 
             <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
