@@ -3,7 +3,7 @@ name: Deploy To EC2
 on:
   push:
     branches:
-      - disabled # 임시 비활성화 (원래: main)
+      - main
 
 jobs:
   build:
@@ -20,6 +20,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+          cache: gradle
 
       - name: 테스트 및 빌드하기
         run: ./gradlew clean build
@@ -50,5 +51,5 @@ jobs:
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/solta-server:latest
             docker stop solta-server || true
             docker rm solta-server || true
-            docker run -d --name solta-server -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod ${{ secrets.DOCKER_HUB_USERNAME }}/solta-server:latest
+            docker run -d --name solta-server -p 8080:8080 -v /var/log/solta:/app/logs -e SPRING_PROFILES_ACTIVE=prod ${{ secrets.DOCKER_HUB_USERNAME }}/solta-server:latest
             docker image prune -f
