@@ -2,8 +2,10 @@ package kr.solta.application;
 
 import java.util.ArrayList;
 import java.util.List;
+import kr.solta.application.provided.ProblemSynchronizer;
 import kr.solta.application.required.ProblemRepository;
 import kr.solta.application.required.SolvedAcClient;
+import kr.solta.application.required.SolvedAcRateLimiter;
 import kr.solta.application.required.dto.SolvedAcProblemResponse;
 import kr.solta.domain.Problem;
 import lombok.RequiredArgsConstructor;
@@ -14,16 +16,17 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ProblemSyncService {
+public class ProblemSyncService implements ProblemSynchronizer {
 
     private static final int BATCH_SIZE = 100;
     private static final int MAX_CONSECUTIVE_EMPTY = 5;
-    private static final long RATE_LIMIT_DELAY_MS = 4000L;
 
     private final SolvedAcClient solvedAcClient;
+    private final SolvedAcRateLimiter solvedAcRateLimiter;
     private final ProblemRepository problemRepository;
     private final ProblemSyncTransactionHandler transactionHandler;
 
+    @Override
     public void syncAll() {
         log.info("[ProblemSync] 문제 동기화 시작");
 
@@ -41,27 +44,25 @@ public class ProblemSyncService {
         long lastBojProblemId = 0;
 
         while (true) {
-            List<Problem> problems = problemRepository.findAllAfterBojProblemId(
-                    lastBojProblemId, PageRequest.of(0, BATCH_SIZE));
+            List<Problem> problems = problemRepository.findAllAfterBojProblemId(lastBojProblemId, PageRequest.of(0, BATCH_SIZE));
 
             if (problems.isEmpty()) {
                 break;
             }
 
-            List<Integer> bojIds = problems.stream()
-                    .map(p -> (int) p.getBojProblemId())
+            List<Long> bojIds = problems.stream()
+                    .map(Problem::getBojProblemId)
                     .toList();
 
             try {
                 List<SolvedAcProblemResponse> responses = solvedAcClient.lookupProblems(bojIds);
                 updatedCount += transactionHandler.updateExistingBatch(problems, responses);
             } catch (Exception e) {
-                log.error("[ProblemSync] 배치 업데이트 실패 (bojIds: {} ~ {}): {}",
-                        bojIds.getFirst(), bojIds.getLast(), e.getMessage());
+                log.error("[ProblemSync] 배치 업데이트 실패 (bojIds: {} ~ {}): {}", bojIds.getFirst(), bojIds.getLast(), e.getMessage());
             }
 
             lastBojProblemId = problems.getLast().getBojProblemId();
-            sleep();
+            solvedAcRateLimiter.waitForNext();
         }
 
         return updatedCount;
@@ -73,9 +74,9 @@ public class ProblemSyncService {
         int consecutiveEmpty = 0;
 
         while (consecutiveEmpty < MAX_CONSECUTIVE_EMPTY) {
-            List<Integer> candidateIds = new ArrayList<>();
+            List<Long> candidateIds = new ArrayList<>();
             for (int i = 0; i < BATCH_SIZE; i++) {
-                candidateIds.add((int) (startId + i));
+                candidateIds.add(startId + i);
             }
 
             try {
@@ -93,18 +94,9 @@ public class ProblemSyncService {
             }
 
             startId += BATCH_SIZE;
-            sleep();
+            solvedAcRateLimiter.waitForNext();
         }
 
         return newCount;
-    }
-
-    private void sleep() {
-        try {
-            Thread.sleep(RATE_LIMIT_DELAY_MS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("[ProblemSync] 동기화 중 인터럽트 발생", e);
-        }
     }
 }

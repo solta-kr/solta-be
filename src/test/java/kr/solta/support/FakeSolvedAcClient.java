@@ -8,7 +8,7 @@ import kr.solta.application.required.dto.SolvedAcProblemResponse;
 public class FakeSolvedAcClient implements SolvedAcClient {
 
     @Override
-    public List<SolvedAcProblemResponse> lookupProblems(List<Integer> problemIds) {
+    public List<SolvedAcProblemResponse> lookupProblems(List<Long> problemIds) {
         return Collections.emptyList();
     }
 }

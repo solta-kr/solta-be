@@ -5,5 +5,5 @@ import kr.solta.application.required.dto.SolvedAcProblemResponse;
 
 public interface SolvedAcClient {
 
-    List<SolvedAcProblemResponse> lookupProblems(List<Integer> problemIds);
+    List<SolvedAcProblemResponse> lookupProblems(List<Long> problemIds);
 }

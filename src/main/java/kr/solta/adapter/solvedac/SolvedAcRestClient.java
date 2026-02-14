@@ -52,7 +52,7 @@ public class SolvedAcRestClient implements SolvedAcClient {
     }
 
     @Override
-    public List<SolvedAcProblemResponse> lookupProblems(final List<Integer> problemIds) {
+    public List<SolvedAcProblemResponse> lookupProblems(final List<Long> problemIds) {
         if (problemIds.isEmpty()) {
             return Collections.emptyList();
         }

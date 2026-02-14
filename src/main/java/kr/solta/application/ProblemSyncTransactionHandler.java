@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import kr.solta.application.required.ProblemRepository;
 import kr.solta.application.required.ProblemTagRepository;
 import kr.solta.application.required.TagRepository;
+import kr.solta.application.required.dto.SolvedAcDisplayName;
 import kr.solta.application.required.dto.SolvedAcProblemResponse;
 import kr.solta.application.required.dto.SolvedAcTagResponse;
 import kr.solta.domain.Problem;
@@ -32,7 +33,7 @@ public class ProblemSyncTransactionHandler {
     @Transactional
     public int updateExistingBatch(final List<Problem> problems, final List<SolvedAcProblemResponse> responses) {
         Map<Long, SolvedAcProblemResponse> responseMap = responses.stream()
-                .collect(Collectors.toMap(r -> (long) r.problemId(), Function.identity()));
+                .collect(Collectors.toMap(SolvedAcProblemResponse::problemId, Function.identity()));
 
         int updatedCount = 0;
 
@@ -102,7 +103,7 @@ public class ProblemSyncTransactionHandler {
                 .orElseGet(() -> {
                     String korName = tagResponse.displayNames().stream()
                             .filter(d -> "ko".equals(d.language()))
-                            .map(d -> d.name())
+                            .map(SolvedAcDisplayName::name)
                             .findFirst()
                             .orElse(tagResponse.key());
 
