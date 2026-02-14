@@ -19,4 +19,7 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
     List<Problem>
     searchByBojProblemIdPrefixAfter(@Param("query") String query, @Param("lastBojProblemId") long lastBojProblemId,
                                     Pageable pageable);
+
+    @Query("SELECT COALESCE(MAX(p.bojProblemId), 0) FROM Problem p")
+    long findMaxBojProblemId();
 }
