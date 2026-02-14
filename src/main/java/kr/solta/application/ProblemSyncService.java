@@ -1,7 +1,7 @@
 package kr.solta.application;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.LongStream;
 import kr.solta.application.provided.ProblemSynchronizer;
 import kr.solta.application.required.ProblemRepository;
 import kr.solta.application.required.SolvedAcClient;
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 public class ProblemSyncService implements ProblemSynchronizer {
 
     private static final int BATCH_SIZE = 100;
-    private static final int MAX_CONSECUTIVE_EMPTY = 5;
 
     private final SolvedAcClient solvedAcClient;
     private final SolvedAcRateLimiter solvedAcRateLimiter;
@@ -42,23 +41,15 @@ public class ProblemSyncService implements ProblemSynchronizer {
     private int syncExistingProblems() {
         int updatedCount = 0;
         long lastBojProblemId = 0;
+        List<Problem> problems;
 
-        while (true) {
-            List<Problem> problems = problemRepository.findAllAfterBojProblemId(lastBojProblemId, PageRequest.of(0, BATCH_SIZE));
-
-            if (problems.isEmpty()) {
-                break;
-            }
-
-            List<Long> bojIds = problems.stream()
-                    .map(Problem::getBojProblemId)
-                    .toList();
-
+        while (!(problems = findNextBatch(lastBojProblemId)).isEmpty()) {
             try {
-                List<SolvedAcProblemResponse> responses = solvedAcClient.lookupProblems(bojIds);
+                List<SolvedAcProblemResponse> responses = solvedAcClient.lookupProblems(toBojIds(problems));
                 updatedCount += transactionHandler.updateExistingBatch(problems, responses);
             } catch (Exception e) {
-                log.error("[ProblemSync] 배치 업데이트 실패 (bojIds: {} ~ {}): {}", bojIds.getFirst(), bojIds.getLast(), e.getMessage());
+                log.error("[ProblemSync] 배치 업데이트 실패 (bojIds: {} ~ {}): {}",
+                        problems.getFirst().getBojProblemId(), problems.getLast().getBojProblemId(), e.getMessage());
             }
 
             lastBojProblemId = problems.getLast().getBojProblemId();
@@ -71,32 +62,37 @@ public class ProblemSyncService implements ProblemSynchronizer {
     private int discoverNewProblems() {
         long startId = problemRepository.findMaxBojProblemId() + 1;
         int newCount = 0;
-        int consecutiveEmpty = 0;
+        List<SolvedAcProblemResponse> responses;
 
-        while (consecutiveEmpty < MAX_CONSECUTIVE_EMPTY) {
-            List<Long> candidateIds = new ArrayList<>();
-            for (int i = 0; i < BATCH_SIZE; i++) {
-                candidateIds.add(startId + i);
-            }
-
-            try {
-                List<SolvedAcProblemResponse> responses = solvedAcClient.lookupProblems(candidateIds);
-
-                if (responses.isEmpty()) {
-                    consecutiveEmpty++;
-                } else {
-                    consecutiveEmpty = 0;
-                    newCount += transactionHandler.insertNewBatch(responses);
-                }
-            } catch (Exception e) {
-                log.error("[ProblemSync] 신규 문제 탐색 실패 (startId: {}): {}", startId, e.getMessage());
-                consecutiveEmpty++;
-            }
-
+        while (!(responses = lookupCandidates(startId)).isEmpty()) {
+            newCount += transactionHandler.insertNewBatch(responses);
             startId += BATCH_SIZE;
             solvedAcRateLimiter.waitForNext();
         }
 
         return newCount;
+    }
+
+    private List<SolvedAcProblemResponse> lookupCandidates(final long startId) {
+        List<Long> candidateIds = LongStream.range(startId, startId + BATCH_SIZE)
+                .boxed()
+                .toList();
+
+        try {
+            return solvedAcClient.lookupProblems(candidateIds);
+        } catch (Exception e) {
+            log.error("[ProblemSync] 신규 문제 탐색 실패 (startId: {}): {}", startId, e.getMessage());
+            return List.of();
+        }
+    }
+
+    private List<Problem> findNextBatch(final long lastBojProblemId) {
+        return problemRepository.findAllAfterBojProblemId(lastBojProblemId, PageRequest.of(0, BATCH_SIZE));
+    }
+
+    private List<Long> toBojIds(final List<Problem> problems) {
+        return problems.stream()
+                .map(Problem::getBojProblemId)
+                .toList();
     }
 }
