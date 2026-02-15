@@ -41,4 +41,8 @@ public class Member extends BaseEntity {
 
         return member;
     }
+
+    public void updateBojId(final String bojId) {
+        this.bojId = requireNonNull(bojId);
+    }
 }

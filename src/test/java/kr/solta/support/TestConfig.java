@@ -1,6 +1,8 @@
 package kr.solta.support;
 
+import kr.solta.application.required.BojClient;
 import kr.solta.application.required.GithubClient;
+import kr.solta.application.required.RandomCodeGenerator;
 import kr.solta.application.required.SolvedAcClient;
 import kr.solta.application.required.SolvedAcRateLimiter;
 import kr.solta.application.required.TokenProvider;
@@ -33,5 +35,17 @@ public class TestConfig {
     @Primary
     public SolvedAcRateLimiter solvedAcRateLimiter() {
         return new FakeSolvedAcRateLimiter();
+    }
+
+    @Bean
+    @Primary
+    public RandomCodeGenerator randomCodeGenerator() {
+        return new FakeRandomCodeGenerator();
+    }
+
+    @Bean
+    @Primary
+    public BojClient bojClient() {
+        return new FakeBojClient();
     }
 }
