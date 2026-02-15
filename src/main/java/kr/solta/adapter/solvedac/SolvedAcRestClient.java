@@ -62,7 +62,7 @@ public class SolvedAcRestClient implements SolvedAcClient {
                 .collect(Collectors.joining(","));
 
         List<SolvedAcProblemResponse> result = restClient.get()
-                .uri(LOOKUP_URL + "?problemIds=" + ids)
+                .uri(LOOKUP_URL + "?problemIds={ids}", ids)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
 
