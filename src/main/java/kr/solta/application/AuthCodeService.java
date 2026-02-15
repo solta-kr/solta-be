@@ -29,10 +29,11 @@ public class AuthCodeService implements AuthCodeCreator, BojIdVerifier {
     public AuthCode create(final AuthMember authMember) {
         Member member = getMemberById(authMember.memberId());
 
-        String code = randomCodeGenerator.generate(AuthCode.CODE_LENGTH);
-        AuthCode authCode = new AuthCode(member, code);
-
-        return authCodeRepository.save(authCode);
+        return authCodeRepository.findByMember(member)
+                .orElseGet(() -> {
+                    String code = randomCodeGenerator.generate(AuthCode.CODE_LENGTH);
+                    return authCodeRepository.save(new AuthCode(member, code));
+                });
     }
 
     @Transactional
