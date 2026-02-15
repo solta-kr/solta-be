@@ -1,5 +1,6 @@
 package kr.solta.adapter.webapi;
 
+import jakarta.validation.Valid;
 import kr.solta.adapter.webapi.resolver.Auth;
 import kr.solta.adapter.webapi.response.AuthCodeResponse;
 import kr.solta.application.provided.AuthCodeCreator;
@@ -32,7 +33,7 @@ public class BojController {
     @PostMapping("/verify")
     public ResponseEntity<Void> verify(
             @Auth final AuthMember authMember,
-            @RequestBody final BojVerifyRequest request
+            @Valid @RequestBody final BojVerifyRequest request
     ) {
         bojIdVerifier.verify(authMember, request.shareUrl());
 
