@@ -35,6 +35,16 @@ public class AuthCode extends BaseEntity {
         this.code = code;
     }
 
+    public void validateCode(final Member member, final String code) {
+        if(!this.member.equals(member)) {
+            throw new IllegalArgumentException("인증하려는 사용자가 아닙니다.");
+        }
+
+        if(!this.code.equals(code)) {
+            throw new IllegalArgumentException("인증 코드가 일치하지 않습니다.");
+        }
+    }
+
     private void validateCodeLength(final String code) {
         if (code == null || code.length() != CODE_LENGTH) {
             throw new IllegalArgumentException("인증 코드는 " + CODE_LENGTH + "자리여야 합니다.");
