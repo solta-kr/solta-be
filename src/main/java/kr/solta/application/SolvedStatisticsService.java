@@ -2,17 +2,27 @@ package kr.solta.application;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import kr.solta.application.provided.SolvedStatisticsReader;
 import kr.solta.application.provided.request.TagKey;
 import kr.solta.application.provided.response.IndependentRatioPoint;
 import kr.solta.application.provided.response.IndependentSolveTrendsResponse;
+import kr.solta.application.provided.response.SolveTimeDistributionResponse;
+import kr.solta.application.provided.response.SolveTimeDistributionResponse.DistributionBucket;
+import kr.solta.application.provided.response.SolveTimeDistributionResponse.MyPosition;
 import kr.solta.application.provided.response.SolveTimeTrendsResponse;
 import kr.solta.application.provided.response.TrendPoint;
 import kr.solta.application.required.MemberRepository;
+import kr.solta.application.required.ProblemRepository;
 import kr.solta.application.required.SolvedRepository;
+import kr.solta.application.required.dto.DistributionBucketData;
 import kr.solta.application.required.dto.IndependentRatioData;
+import kr.solta.application.required.dto.SolveTimeStats;
 import kr.solta.application.required.dto.TrendData;
 import kr.solta.domain.Member;
+import kr.solta.domain.Problem;
+import kr.solta.domain.SolveTimeDistribution;
 import kr.solta.domain.SolvedPeriod;
 import kr.solta.domain.Tier;
 import kr.solta.domain.TierGroup;
@@ -25,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SolvedStatisticsService implements SolvedStatisticsReader {
 
     private final MemberRepository memberRepository;
+    private final ProblemRepository problemRepository;
     private final SolvedRepository solvedRepository;
 
     @Transactional(readOnly = true)
@@ -64,6 +75,46 @@ public class SolvedStatisticsService implements SolvedStatisticsReader {
                 tierGroup,
                 trends
         );
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public SolveTimeDistributionResponse getSolveTimeDistribution(final long bojProblemId, final int solveTimeSeconds) {
+        Problem problem = problemRepository.findByBojProblemId(bojProblemId)
+                .orElseThrow(() -> new IllegalArgumentException("문제를 찾을 수 없습니다. bojProblemId: " + bojProblemId));
+
+        SolveTimeStats stats = solvedRepository.findSolveTimeStatsByProblem(problem);
+
+        SolveTimeDistribution distribution = buildDistribution(problem, stats);
+        long slowerCount = stats.totalCount() == 0 ? 0 : solvedRepository.countSlowerSolvers(problem, solveTimeSeconds);
+
+        List<DistributionBucket> buckets = distribution.getBuckets().stream()
+                .map(b -> new DistributionBucket(b.rangeStart(), b.rangeEnd(), b.count()))
+                .toList();
+
+        return new SolveTimeDistributionResponse(
+                problem.getBojProblemId(),
+                problem.getTitle(),
+                problem.getTier(),
+                stats.totalCount(),
+                distribution.getBucketSize(),
+                buckets,
+                new MyPosition(solveTimeSeconds, distribution.calculateTopPercent(stats.totalCount(), slowerCount))
+        );
+    }
+
+    private SolveTimeDistribution buildDistribution(Problem problem, SolveTimeStats stats) {
+        if (stats.totalCount() == 0) {
+            return SolveTimeDistribution.empty();
+        }
+
+        SolveTimeDistribution distribution = new SolveTimeDistribution(stats.maxSolveTimeSeconds());
+        Map<Long, Long> bucketCountMap = solvedRepository.findSolveTimeDistribution(problem, distribution.getBucketSize())
+                .stream()
+                .collect(Collectors.toMap(DistributionBucketData::bucketIndex, DistributionBucketData::count));
+        distribution.fillBuckets(bucketCountMap);
+
+        return distribution;
     }
 
     private Member getMemberByName(final String name) {

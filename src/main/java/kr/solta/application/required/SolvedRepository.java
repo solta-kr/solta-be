@@ -3,8 +3,10 @@ package kr.solta.application.required;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.solta.application.required.dto.AllSolvedAverage;
+import kr.solta.application.required.dto.DistributionBucketData;
 import kr.solta.application.required.dto.IndependentRatioData;
 import kr.solta.application.required.dto.ProblemSolvedStats;
+import kr.solta.application.required.dto.SolveTimeStats;
 import kr.solta.application.required.dto.SolvedStats;
 import kr.solta.application.required.dto.TrendData;
 import kr.solta.domain.Member;
@@ -352,4 +354,35 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
 
     @EntityGraph(attributePaths = "problem")
     List<Solved> findByMemberAndSolveTypeOrderBySolveTimeSecondsDesc(final Member member, final SolveType solveType);
+
+    @Query("""
+                SELECT new kr.solta.application.required.dto.SolveTimeStats(
+                    COUNT(s.id),
+                    MAX(s.solveTimeSeconds)
+                )
+                FROM Solved s
+                WHERE s.problem = :problem AND s.solveType = kr.solta.domain.SolveType.SELF
+            """)
+    SolveTimeStats findSolveTimeStatsByProblem(Problem problem);
+
+    @Query("""
+                SELECT new kr.solta.application.required.dto.DistributionBucketData(
+                    FLOOR(s.solveTimeSeconds / :bucketSize),
+                    COUNT(s.id)
+                )
+                FROM Solved s
+                WHERE s.problem = :problem AND s.solveType = kr.solta.domain.SolveType.SELF
+                GROUP BY FLOOR(s.solveTimeSeconds / :bucketSize)
+                ORDER BY FLOOR(s.solveTimeSeconds / :bucketSize)
+            """)
+    List<DistributionBucketData> findSolveTimeDistribution(Problem problem, int bucketSize);
+
+    @Query("""
+                SELECT COUNT(s.id)
+                FROM Solved s
+                WHERE s.problem = :problem
+                AND s.solveType = kr.solta.domain.SolveType.SELF
+                AND s.solveTimeSeconds > :solveTimeSeconds
+            """)
+    long countSlowerSolvers(Problem problem, int solveTimeSeconds);
 }
