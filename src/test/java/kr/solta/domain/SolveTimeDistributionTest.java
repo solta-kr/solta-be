@@ -40,7 +40,7 @@ class SolveTimeDistributionTest {
     @Test
     void 빈_구간은_count_0으로_채워진다() {
         //given
-        SolveTimeDistribution distribution = new SolveTimeDistribution(900);
+        SolveTimeDistribution distribution = new SolveTimeDistribution(800);
 
         //when - bucket 0과 2에만 데이터, bucket 1은 비어있음
         distribution.fillBuckets(Map.of(0L, 3L, 2L, 1L));
@@ -48,9 +48,24 @@ class SolveTimeDistributionTest {
         //then
         assertSoftly(softly -> {
             softly.assertThat(distribution.getBuckets()).hasSize(3);
-            softly.assertThat(distribution.getBuckets().get(0)).isEqualTo(new Bucket(0, 300, 3));
-            softly.assertThat(distribution.getBuckets().get(1)).isEqualTo(new Bucket(300, 600, 0));
-            softly.assertThat(distribution.getBuckets().get(2)).isEqualTo(new Bucket(600, 900, 1));
+            softly.assertThat(distribution.getBuckets().get(0)).isEqualTo(new Bucket(1, 300, 3));
+            softly.assertThat(distribution.getBuckets().get(1)).isEqualTo(new Bucket(301, 600, 0));
+            softly.assertThat(distribution.getBuckets().get(2)).isEqualTo(new Bucket(601, 900, 1));
+        });
+    }
+
+    @Test
+    void 풀이_시간이_버킷_경계에_정확히_떨어지면_해당_버킷에_포함된다() {
+        //given - maxTime 300초 → FLOOR((300-1)/300) = bucket index 0
+        SolveTimeDistribution distribution = new SolveTimeDistribution(300);
+
+        //when
+        distribution.fillBuckets(Map.of(0L, 1L));
+
+        //then
+        assertSoftly(softly -> {
+            softly.assertThat(distribution.getBuckets()).hasSize(1);
+            softly.assertThat(distribution.getBuckets().get(0)).isEqualTo(new Bucket(1, 300, 1));
         });
     }
 

@@ -60,12 +60,12 @@ class SolveTimeDistributionTest extends IntegrationTest {
             softly.assertThat(response.distribution()).hasSize(2);
 
             DistributionBucket first = response.distribution().get(0);
-            softly.assertThat(first.rangeStart()).isEqualTo(0);
+            softly.assertThat(first.rangeStart()).isEqualTo(1);
             softly.assertThat(first.rangeEnd()).isEqualTo(300);
             softly.assertThat(first.count()).isEqualTo(2);
 
             DistributionBucket second = response.distribution().get(1);
-            softly.assertThat(second.rangeStart()).isEqualTo(300);
+            softly.assertThat(second.rangeStart()).isEqualTo(301);
             softly.assertThat(second.rangeEnd()).isEqualTo(600);
             softly.assertThat(second.count()).isEqualTo(2);
         });
