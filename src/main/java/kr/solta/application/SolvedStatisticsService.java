@@ -80,8 +80,7 @@ public class SolvedStatisticsService implements SolvedStatisticsReader {
     @Transactional(readOnly = true)
     @Override
     public SolveTimeDistributionResponse getSolveTimeDistribution(final long bojProblemId, final int solveTimeSeconds) {
-        Problem problem = problemRepository.findByBojProblemId(bojProblemId)
-                .orElseThrow(() -> new IllegalArgumentException("문제를 찾을 수 없습니다. bojProblemId: " + bojProblemId));
+        Problem problem = getProblemByBojId(bojProblemId);
 
         SolveTimeStats stats = solvedRepository.findSolveTimeStatsByProblem(problem);
 
@@ -101,20 +100,6 @@ public class SolvedStatisticsService implements SolvedStatisticsReader {
                 buckets,
                 new MyPosition(solveTimeSeconds, distribution.calculateTopPercent(stats.totalCount(), slowerCount))
         );
-    }
-
-    private SolveTimeDistribution buildDistribution(Problem problem, SolveTimeStats stats) {
-        if (stats.totalCount() == 0) {
-            return SolveTimeDistribution.empty();
-        }
-
-        SolveTimeDistribution distribution = new SolveTimeDistribution(stats.maxSolveTimeSeconds());
-        Map<Long, Long> bucketCountMap = solvedRepository.findSolveTimeDistribution(problem, distribution.getBucketSize())
-                .stream()
-                .collect(Collectors.toMap(DistributionBucketData::bucketIndex, DistributionBucketData::count));
-        distribution.fillBuckets(bucketCountMap);
-
-        return distribution;
     }
 
     private Member getMemberByName(final String name) {
@@ -210,5 +195,24 @@ public class SolvedStatisticsService implements SolvedStatisticsReader {
                 ? solvedRepository.findIndependentRatioTrendsByTag(memberId, startDate, dateFormat, tagKey.getKey())
                 : solvedRepository.findIndependentRatioTrendsByTiersAndTag(memberId, startDate, dateFormat, tiers,
                         tagKey.getKey());
+    }
+
+    private Problem getProblemByBojId(final long bojProblemId) {
+        return problemRepository.findByBojProblemId(bojProblemId)
+                .orElseThrow(() -> new IllegalArgumentException("문제를 찾을 수 없습니다. bojProblemId: " + bojProblemId));
+    }
+
+    private SolveTimeDistribution buildDistribution(Problem problem, SolveTimeStats stats) {
+        if (stats.totalCount() == 0) {
+            return SolveTimeDistribution.empty();
+        }
+
+        SolveTimeDistribution distribution = new SolveTimeDistribution(stats.maxSolveTimeSeconds());
+        Map<Long, Long> bucketCountMap = solvedRepository.findSolveTimeDistribution(problem, distribution.getBucketSize())
+                .stream()
+                .collect(Collectors.toMap(DistributionBucketData::bucketIndex, DistributionBucketData::count));
+        distribution.fillBuckets(bucketCountMap);
+
+        return distribution;
     }
 }
