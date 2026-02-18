@@ -3,8 +3,10 @@ package kr.solta.adapter.webapi;
 import kr.solta.adapter.webapi.response.ProblemDetailResponse;
 import kr.solta.adapter.webapi.response.ProblemSearchResponse;
 import kr.solta.application.provided.ProblemFinder;
+import kr.solta.application.provided.SolvedStatisticsReader;
 import kr.solta.application.provided.response.ProblemDetail;
 import kr.solta.application.provided.response.ProblemPage;
+import kr.solta.application.provided.response.SolveTimeDistributionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProblemController {
 
     private final ProblemFinder problemFinder;
+    private final SolvedStatisticsReader solvedStatisticsReader;
 
     @GetMapping("/search")
     public ResponseEntity<ProblemSearchResponse> searchProblems(
@@ -37,5 +40,17 @@ public class ProblemController {
         ProblemDetail detail = problemFinder.findProblemDetail(bojProblemId);
 
         return ResponseEntity.ok(ProblemDetailResponse.from(detail));
+    }
+
+    @GetMapping("/{bojProblemId}/solve-time-distribution")
+    public ResponseEntity<SolveTimeDistributionResponse> getSolveTimeDistribution(
+            @PathVariable final long bojProblemId,
+            @RequestParam final int solveTimeSeconds
+    ) {
+        SolveTimeDistributionResponse response = solvedStatisticsReader.getSolveTimeDistribution(
+                bojProblemId, solveTimeSeconds
+        );
+
+        return ResponseEntity.ok(response);
     }
 }
