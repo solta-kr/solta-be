@@ -367,13 +367,13 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
 
     @Query("""
                 SELECT new kr.solta.application.required.dto.DistributionBucketData(
-                    FLOOR(s.solveTimeSeconds / :bucketSize),
+                    FLOOR((s.solveTimeSeconds - 1) / :bucketSize),
                     COUNT(s.id)
                 )
                 FROM Solved s
                 WHERE s.problem = :problem AND s.solveType = kr.solta.domain.SolveType.SELF
-                GROUP BY FLOOR(s.solveTimeSeconds / :bucketSize)
-                ORDER BY FLOOR(s.solveTimeSeconds / :bucketSize)
+                GROUP BY FLOOR((s.solveTimeSeconds - 1) / :bucketSize)
+                ORDER BY FLOOR((s.solveTimeSeconds - 1) / :bucketSize)
             """)
     List<DistributionBucketData> findSolveTimeDistribution(Problem problem, int bucketSize);
 

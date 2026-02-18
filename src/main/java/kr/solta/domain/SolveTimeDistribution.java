@@ -31,14 +31,12 @@ public class SolveTimeDistribution {
         if (maxSolveTimeSeconds == 0) {
             return;
         }
-        long totalBuckets = (long) Math.ceil((double) maxSolveTimeSeconds / bucketSize);
+        long totalBuckets = (maxSolveTimeSeconds - 1) / bucketSize + 1;
         List<Bucket> result = new ArrayList<>();
         for (long i = 0; i < totalBuckets; i++) {
-            result.add(new Bucket(
-                    (int) (i * bucketSize),
-                    (int) ((i + 1) * bucketSize),
-                    bucketCountMap.getOrDefault(i, 0L)
-            ));
+            int rangeStart = (int) (i * bucketSize + 1);
+            int rangeEnd = (int) ((i + 1) * bucketSize);
+            result.add(new Bucket(rangeStart, rangeEnd, bucketCountMap.getOrDefault(i, 0L)));
         }
         this.buckets = result;
     }
