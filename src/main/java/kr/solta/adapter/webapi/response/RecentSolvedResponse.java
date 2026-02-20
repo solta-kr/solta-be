@@ -42,7 +42,7 @@ public record RecentSolvedResponse(
                                 .map(Tag::getKorName)
                                 .toList()
                 ),
-                solved.getCreatedAt()
+                solved.getSolvedTime()
         );
     }
 }
