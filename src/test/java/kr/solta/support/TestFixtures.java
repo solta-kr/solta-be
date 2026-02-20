@@ -52,15 +52,15 @@ public class TestFixtures {
     }
 
     public static Solved createSolved(Member member, Problem problem) {
-        return Solved.register(3600, SolveType.SELF, member, problem, LocalDateTime.now());
+        return Solved.register(3600, SolveType.SELF, member, problem, LocalDateTime.now(), null);
     }
 
     public static Solved createSolved(int solveTimeSeconds, Member member, Problem problem) {
-        return Solved.register(solveTimeSeconds, SolveType.SELF, member, problem, LocalDateTime.now());
+        return Solved.register(solveTimeSeconds, SolveType.SELF, member, problem, LocalDateTime.now(), null);
     }
 
     public static Solved createSolved(int solveTimeSeconds, SolveType solveType, Member member, Problem problem) {
-        return Solved.register(solveTimeSeconds, solveType, member, problem, LocalDateTime.now());
+        return Solved.register(solveTimeSeconds, solveType, member, problem, LocalDateTime.now(), null);
     }
 
     public static Solved createSolved(
@@ -70,6 +70,6 @@ public class TestFixtures {
             Problem problem,
             LocalDateTime solvedTime
     ) {
-        return Solved.register(solveTimeSeconds, solveType, member, problem, solvedTime);
+        return Solved.register(solveTimeSeconds, solveType, member, problem, solvedTime, null);
     }
 }

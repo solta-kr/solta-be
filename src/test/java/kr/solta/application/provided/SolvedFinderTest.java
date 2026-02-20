@@ -69,9 +69,9 @@ class SolvedFinderTest extends IntegrationTest {
         createProblemTag(problem2, tag3);
 
         Solved solved1 = solvedRepository.save(
-                Solved.register(3600, SolveType.SELF, member, problem1, java.time.LocalDateTime.now()));
+                Solved.register(3600, SolveType.SELF, member, problem1, java.time.LocalDateTime.now(), null));
         Solved solved2 = solvedRepository.save(
-                Solved.register(1800, SolveType.SOLUTION, member, problem2, java.time.LocalDateTime.now()));
+                Solved.register(1800, SolveType.SOLUTION, member, problem2, java.time.LocalDateTime.now(), null));
 
         //when
         List<SolvedWithTags> result = solvedFinder.findSolvedWithTags(member.getName());
@@ -200,11 +200,11 @@ class SolvedFinderTest extends IntegrationTest {
         createProblemTag(problem2, tag2);
 
         Solved solved1 = solvedRepository.save(
-                Solved.register(3600, SolveType.SOLUTION, member, problem1, java.time.LocalDateTime.now().minusDays(2)));
+                Solved.register(3600, SolveType.SOLUTION, member, problem1, java.time.LocalDateTime.now().minusDays(2), null));
         Solved solved2 = solvedRepository.save(
-                Solved.register(1800, SolveType.SOLUTION, member, problem2, java.time.LocalDateTime.now().minusDays(1)));
+                Solved.register(1800, SolveType.SOLUTION, member, problem2, java.time.LocalDateTime.now().minusDays(1), null));
         solvedRepository.save(
-                Solved.register(5400, SolveType.SELF, member, problem3, java.time.LocalDateTime.now()));
+                Solved.register(5400, SolveType.SELF, member, problem3, java.time.LocalDateTime.now(), null));
 
         //when
         List<SolvedWithTags> result = solvedFinder.findProblemsToRetry(member.getName(), SolvedSortType.LATEST);
@@ -225,11 +225,11 @@ class SolvedFinderTest extends IntegrationTest {
         Problem goldProblem = createProblem("골드", 1002L, Tier.G2);
 
         solvedRepository.save(
-                Solved.register(3600, SolveType.SOLUTION, member, bronzeProblem, java.time.LocalDateTime.now()));
+                Solved.register(3600, SolveType.SOLUTION, member, bronzeProblem, java.time.LocalDateTime.now(), null));
         solvedRepository.save(
-                Solved.register(1800, SolveType.SOLUTION, member, silverProblem, java.time.LocalDateTime.now()));
+                Solved.register(1800, SolveType.SOLUTION, member, silverProblem, java.time.LocalDateTime.now(), null));
         solvedRepository.save(
-                Solved.register(5400, SolveType.SOLUTION, member, goldProblem, java.time.LocalDateTime.now()));
+                Solved.register(5400, SolveType.SOLUTION, member, goldProblem, java.time.LocalDateTime.now(), null));
 
         //when
         List<SolvedWithTags> result = solvedFinder.findProblemsToRetry(member.getName(), SolvedSortType.TIER);
@@ -250,11 +250,11 @@ class SolvedFinderTest extends IntegrationTest {
         Problem problem3 = createProblem("문제3", 1002L, Tier.G2);
 
         solvedRepository.save(
-                Solved.register(1800, SolveType.SOLUTION, member, problem1, java.time.LocalDateTime.now()));
+                Solved.register(1800, SolveType.SOLUTION, member, problem1, java.time.LocalDateTime.now(), null));
         solvedRepository.save(
-                Solved.register(5400, SolveType.SOLUTION, member, problem2, java.time.LocalDateTime.now()));
+                Solved.register(5400, SolveType.SOLUTION, member, problem2, java.time.LocalDateTime.now(), null));
         solvedRepository.save(
-                Solved.register(3600, SolveType.SOLUTION, member, problem3, java.time.LocalDateTime.now()));
+                Solved.register(3600, SolveType.SOLUTION, member, problem3, java.time.LocalDateTime.now(), null));
 
         //when
         List<SolvedWithTags> result = solvedFinder.findProblemsToRetry(member.getName(), SolvedSortType.SOLVE_TIME);
@@ -275,11 +275,11 @@ class SolvedFinderTest extends IntegrationTest {
         Problem selfProblem2 = createProblem("스스로푼문제2", 1002L, Tier.G2);
 
         Solved solved1 = solvedRepository.save(
-                Solved.register(3600, SolveType.SOLUTION, member, solutionProblem, java.time.LocalDateTime.now()));
+                Solved.register(3600, SolveType.SOLUTION, member, solutionProblem, java.time.LocalDateTime.now(), null));
         solvedRepository.save(
-                Solved.register(1800, SolveType.SELF, member, selfProblem1, java.time.LocalDateTime.now()));
+                Solved.register(1800, SolveType.SELF, member, selfProblem1, java.time.LocalDateTime.now(), null));
         solvedRepository.save(
-                Solved.register(5400, SolveType.SELF, member, selfProblem2, java.time.LocalDateTime.now()));
+                Solved.register(5400, SolveType.SELF, member, selfProblem2, java.time.LocalDateTime.now(), null));
 
         //when
         List<SolvedWithTags> result = solvedFinder.findProblemsToRetry(member.getName(), SolvedSortType.LATEST);
@@ -319,9 +319,9 @@ class SolvedFinderTest extends IntegrationTest {
         createProblemTag(problem2, tag3);
 
         Solved solved1 = solvedRepository.save(
-                Solved.register(3600, SolveType.SOLUTION, member, problem1, java.time.LocalDateTime.now()));
+                Solved.register(3600, SolveType.SOLUTION, member, problem1, java.time.LocalDateTime.now(), null));
         Solved solved2 = solvedRepository.save(
-                Solved.register(1800, SolveType.SOLUTION, member, problem2, java.time.LocalDateTime.now()));
+                Solved.register(1800, SolveType.SOLUTION, member, problem2, java.time.LocalDateTime.now(), null));
 
         //when
         List<SolvedWithTags> result = solvedFinder.findProblemsToRetry(member.getName(), SolvedSortType.LATEST);
