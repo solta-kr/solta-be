@@ -3,10 +3,12 @@ package kr.solta.adapter.webapi;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import kr.solta.adapter.webapi.request.SolvedMemoUpdateRequest;
 import kr.solta.adapter.webapi.resolver.Auth;
 import kr.solta.adapter.webapi.response.RecentSolvedResponse;
 import kr.solta.adapter.webapi.response.SolvedRegisterResponse;
 import kr.solta.application.provided.SolvedFinder;
+import kr.solta.application.provided.SolvedMemoUpdater;
 import kr.solta.application.provided.SolvedRegister;
 import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.request.SolvedRegisterRequest;
@@ -20,6 +22,8 @@ import kr.solta.domain.TierGroupAverage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +37,7 @@ public class SolvedController {
 
     private final SolvedFinder solvedFinder;
     private final SolvedRegister solvedRegister;
+    private final SolvedMemoUpdater solvedMemoUpdater;
 
     @PostMapping("/solveds")
     public ResponseEntity<SolvedRegisterResponse> register(
@@ -42,6 +47,17 @@ public class SolvedController {
         Solved solved = solvedRegister.register(authMember, solvedRegisterRequest);
 
         return ResponseEntity.ok(SolvedRegisterResponse.from(solved));
+    }
+
+    @PatchMapping("/solveds/{solvedId}/memo")
+    public ResponseEntity<Void> updateMemo(
+            @PathVariable final Long solvedId,
+            @RequestBody final SolvedMemoUpdateRequest request,
+            @Auth final AuthMember authMember
+    ) {
+        solvedMemoUpdater.update(authMember, solvedId, request.memo());
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/members/solveds/search")

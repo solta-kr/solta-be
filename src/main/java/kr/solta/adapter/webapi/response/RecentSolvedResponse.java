@@ -12,6 +12,7 @@ public record RecentSolvedResponse(
         Long solvedId,
         SolveType solveType,
         Integer solveTimeSeconds,
+        String memo,
         ProblemDetail problem,
         LocalDateTime createdAt
 ) {
@@ -24,13 +25,14 @@ public record RecentSolvedResponse(
     ) {
     }
 
-    public static RecentSolvedResponse from(SolvedWithTags solvedWithTags) {
+    public static RecentSolvedResponse from(final SolvedWithTags solvedWithTags) {
         Solved solved = solvedWithTags.solved();
 
         return new RecentSolvedResponse(
                 solved.getId(),
                 solved.getSolveType(),
                 solved.getSolveTimeSeconds(),
+                solved.getMemo(),
                 new ProblemDetail(
                         solved.getProblem().getId(),
                         solved.getProblem().getBojProblemId(),

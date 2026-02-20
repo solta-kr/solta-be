@@ -6,7 +6,8 @@ import kr.solta.domain.SolveType;
 public record SolvedRegisterRequest(
         @NotNull SolveType solveType,
         @NotNull Long bojProblemId,
-        Integer solveTimeSeconds
+        Integer solveTimeSeconds,
+        String memo
 ) {
 
 }

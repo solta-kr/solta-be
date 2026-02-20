@@ -245,9 +245,9 @@ class ProblemFinderTest extends IntegrationTest {
         Member member2 = memberRepository.save(createMember(2L, "user2"));
         Member member3 = memberRepository.save(createMember(3L, "user3"));
 
-        solvedRepository.save(Solved.register(1200, SolveType.SELF, member1, problem, java.time.LocalDateTime.now()));
-        solvedRepository.save(Solved.register(1800, SolveType.SELF, member2, problem, java.time.LocalDateTime.now()));
-        solvedRepository.save(Solved.register(600, SolveType.SOLUTION, member3, problem, java.time.LocalDateTime.now()));
+        solvedRepository.save(Solved.register(1200, SolveType.SELF, member1, problem, java.time.LocalDateTime.now(), null));
+        solvedRepository.save(Solved.register(1800, SolveType.SELF, member2, problem, java.time.LocalDateTime.now(), null));
+        solvedRepository.save(Solved.register(600, SolveType.SOLUTION, member3, problem, java.time.LocalDateTime.now(), null));
 
         //when
         ProblemDetail detail = problemFinder.findProblemDetail(1003L);

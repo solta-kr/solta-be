@@ -4,6 +4,7 @@ import static kr.solta.support.TestFixtures.createMember;
 import static kr.solta.support.TestFixtures.createProblem;
 import static kr.solta.support.TestFixtures.createProblemTag;
 import static kr.solta.support.TestFixtures.createTag;
+import static org.assertj.core.api.Assertions.*;
 
 import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.request.SolvedRegisterRequest;
@@ -48,14 +49,15 @@ class SolvedRegisterTest extends IntegrationTest {
         SolvedRegisterRequest solvedRegisterRequest = new SolvedRegisterRequest(
                 SolveType.SELF,
                 problem.getBojProblemId(),
-                1200
+                1200,
+                null
         );
 
         //when
         Solved solved = solvedRegister.register(new AuthMember(member.getId()), solvedRegisterRequest);
 
         //then
-        Assertions.assertThat(solved)
+        assertThat(solved)
                 .extracting(Solved::getMember, Solved::getProblem, Solved::getSolveType, Solved::getSolveTimeSeconds)
                 .containsExactly(member, problem, SolveType.SELF, 1200);
     }
@@ -67,12 +69,13 @@ class SolvedRegisterTest extends IntegrationTest {
         SolvedRegisterRequest solvedRegisterRequest = new SolvedRegisterRequest(
                 SolveType.SELF,
                 problem.getBojProblemId(),
-                1200
+                1200,
+                null
         );
         AuthMember notExistMember = new AuthMember(999L);
 
         //when & then
-        Assertions.assertThatThrownBy(() -> solvedRegister.register(notExistMember, solvedRegisterRequest))
+        assertThatThrownBy(() -> solvedRegister.register(notExistMember, solvedRegisterRequest))
                 .isInstanceOf(Exception.class)
                 .hasMessageContaining("존재하지 않는 사용자입니다");
     }
@@ -84,12 +87,35 @@ class SolvedRegisterTest extends IntegrationTest {
         SolvedRegisterRequest solvedRegisterRequest = new SolvedRegisterRequest(
                 SolveType.SELF,
                 9999L,
-                1200
+                1200,
+                null
         );
 
         //when & then
-        Assertions.assertThatThrownBy(() -> solvedRegister.register(new AuthMember(member.getId()), solvedRegisterRequest))
+        assertThatThrownBy(() -> solvedRegister.register(new AuthMember(member.getId()), solvedRegisterRequest))
                 .isInstanceOf(Exception.class)
                 .hasMessageContaining("백준 문제 번호: 9999 에 해당하는 문제가 존재하지 않습니다");
+    }
+
+    @Test
+    void 메모와_함께_solved를_등록할_수_있다() {
+        //given
+        Member member = memberRepository.save(createMember());
+        Tag tag = tagRepository.save(createTag());
+        Problem problem = problemRepository.save(createProblem());
+        problemTagRepository.save(createProblemTag(problem, tag));
+        String memo = "그리디 접근으로 풀었다.";
+        SolvedRegisterRequest solvedRegisterRequest = new SolvedRegisterRequest(
+                SolveType.SELF,
+                problem.getBojProblemId(),
+                1200,
+                memo
+        );
+
+        //when
+        Solved solved = solvedRegister.register(new AuthMember(member.getId()), solvedRegisterRequest);
+
+        //then
+        assertThat(solved.getMemo()).isEqualTo(memo);
     }
 }

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import kr.solta.application.exception.NotFoundEntityException;
 import kr.solta.application.provided.SolvedFinder;
+import kr.solta.application.provided.SolvedMemoUpdater;
 import kr.solta.application.provided.SolvedRegister;
 import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.request.SolvedRegisterRequest;
@@ -37,7 +38,7 @@ import org.springframework.validation.annotation.Validated;
 @Transactional
 @Validated
 @RequiredArgsConstructor
-public class SolvedService implements SolvedRegister, SolvedFinder {
+public class SolvedService implements SolvedRegister, SolvedFinder, SolvedMemoUpdater {
 
     private final MemberRepository memberRepository;
     private final ProblemRepository problemRepository;
@@ -54,7 +55,8 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
                 solvedRegisterRequest.solveType(),
                 solvedMember,
                 problem,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                solvedRegisterRequest.memo()
         );
 
         return solvedRepository.save(solved);
@@ -123,6 +125,15 @@ public class SolvedService implements SolvedRegister, SolvedFinder {
                         tagsByProblem.getOrDefault(solved.getProblem(), List.of())
                 ))
                 .toList();
+    }
+
+    @Override
+    public void update(final AuthMember authMember, final Long solvedId, final String memo) {
+        Member member = getMemberById(authMember.memberId());
+        Solved solved = solvedRepository.findById(solvedId)
+                .orElseThrow(() -> new NotFoundEntityException("존재하지 않는 풀이입니다."));
+
+        solved.updateMemo(member, memo);
     }
 
     private Problem getProblem(SolvedRegisterRequest solvedRegisterRequest) {

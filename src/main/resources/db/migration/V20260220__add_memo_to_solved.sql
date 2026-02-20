@@ -1,0 +1,2 @@
+ALTER TABLE solved
+    ADD COLUMN memo TEXT NULL;

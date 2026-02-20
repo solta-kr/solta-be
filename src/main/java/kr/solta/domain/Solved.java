@@ -40,12 +40,16 @@ public class Solved extends BaseEntity {
 
     private LocalDateTime solvedTime;
 
+    @Column(columnDefinition = "TEXT")
+    private String memo;
+
     public static Solved register(
-            Integer solveTimeSeconds,
-            SolveType solveType,
-            Member member,
-            Problem problem,
-            LocalDateTime solvedTime
+            final Integer solveTimeSeconds,
+            final SolveType solveType,
+            final Member member,
+            final Problem problem,
+            final LocalDateTime solvedTime,
+            final String memo
     ) {
         Solved solved = new Solved();
 
@@ -54,7 +58,15 @@ public class Solved extends BaseEntity {
         solved.member = requireNonNull(member);
         solved.problem = requireNonNull(problem);
         solved.solvedTime = requireNonNull(solvedTime);
+        solved.memo = memo;
 
         return solved;
+    }
+
+    public void updateMemo(final Member member, final String memo) {
+        if (!this.member.equals(member)) {
+            throw new IllegalArgumentException("본인의 풀이만 수정할 수 있습니다.");
+        }
+        this.memo = memo;
     }
 }
