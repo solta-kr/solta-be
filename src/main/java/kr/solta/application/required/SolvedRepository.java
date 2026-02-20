@@ -3,11 +3,13 @@ package kr.solta.application.required;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.solta.application.required.dto.AllSolvedAverage;
+import kr.solta.application.required.dto.BadgeSummaryStats;
 import kr.solta.application.required.dto.DistributionBucketData;
 import kr.solta.application.required.dto.IndependentRatioData;
 import kr.solta.application.required.dto.ProblemSolvedStats;
 import kr.solta.application.required.dto.SolveTimeStats;
 import kr.solta.application.required.dto.SolvedStats;
+import kr.solta.application.required.dto.TierGroupStat;
 import kr.solta.application.required.dto.TrendData;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
@@ -241,6 +243,43 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
             final List<Tier> tiers,
             final String tagKey
     );
+
+    @Query("""
+                SELECT new kr.solta.application.required.dto.BadgeSummaryStats(
+                    coalesce(sum(s.solveTimeSeconds), 0),
+                    coalesce(avg(s.solveTimeSeconds), 0.0),
+                    count(s.id)
+                )
+                FROM Solved s
+                WHERE s.member.id = :memberId
+                AND s.solveType = kr.solta.domain.SolveType.SELF
+            """)
+    BadgeSummaryStats findBadgeSummaryStats(Long memberId);
+
+    @Query("""
+                SELECT CAST(
+                    ROUND(
+                        100.0 * SUM(CASE WHEN s.solveType = kr.solta.domain.SolveType.SELF THEN 1 ELSE 0 END)
+                        / NULLIF(COUNT(s.id), 0)
+                    ) AS integer
+                )
+                FROM Solved s
+                WHERE s.member.id = :memberId
+            """)
+    Integer findSelfSolveRate(Long memberId);
+
+    @Query("""
+                SELECT new kr.solta.application.required.dto.TierGroupStat(
+                    s.problem.tier,
+                    avg(s.solveTimeSeconds)
+                )
+                FROM Solved s
+                WHERE s.member.id = :memberId
+                AND s.solveType = kr.solta.domain.SolveType.SELF
+                AND s.problem.tier IN :tiers
+                GROUP BY s.problem.tier
+            """)
+    List<TierGroupStat> findBadgeTierGroupStats(Long memberId, List<Tier> tiers);
 
     @Query("""
                 SELECT new kr.solta.application.required.dto.IndependentRatioData(
