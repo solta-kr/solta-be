@@ -98,19 +98,25 @@ public class BadgeService implements BadgeReader {
     }
 
     private Map<TierGroup, Double> mapToTierGroupAvg(List<TierGroupStat> stats) {
-        Map<Tier, Double> avgByTier = stats.stream()
-                .collect(Collectors.toMap(TierGroupStat::tier, TierGroupStat::avgSeconds));
+        Map<Tier, TierGroupStat> statByTier = stats.stream()
+                .collect(Collectors.toMap(TierGroupStat::tier, s -> s));
 
         return BADGE_TIER_GROUPS.stream()
                 .collect(Collectors.toMap(
                         tg -> tg,
                         tg -> {
-                            List<Double> avgs = tg.getTiers().stream()
-                                    .filter(avgByTier::containsKey)
-                                    .map(avgByTier::get)
+                            List<TierGroupStat> matched = tg.getTiers().stream()
+                                    .filter(statByTier::containsKey)
+                                    .map(statByTier::get)
                                     .toList();
-                            if (avgs.isEmpty()) return 0.0;
-                            return avgs.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                            if (matched.isEmpty()) return 0.0;
+                            double totalSeconds = matched.stream()
+                                    .mapToDouble(s -> s.avgSeconds() * s.count())
+                                    .sum();
+                            long totalCount = matched.stream()
+                                    .mapToLong(TierGroupStat::count)
+                                    .sum();
+                            return totalCount == 0 ? 0.0 : totalSeconds / totalCount;
                         }
                 ));
     }

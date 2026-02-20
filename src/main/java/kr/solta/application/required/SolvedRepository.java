@@ -271,7 +271,8 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     @Query("""
                 SELECT new kr.solta.application.required.dto.TierGroupStat(
                     s.problem.tier,
-                    avg(s.solveTimeSeconds)
+                    avg(s.solveTimeSeconds),
+                    count(s.id)
                 )
                 FROM Solved s
                 WHERE s.member.id = :memberId

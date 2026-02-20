@@ -4,6 +4,7 @@ import kr.solta.domain.Tier;
 
 public record TierGroupStat(
         Tier tier,
-        double avgSeconds
+        double avgSeconds,
+        long count
 ) {
 }
