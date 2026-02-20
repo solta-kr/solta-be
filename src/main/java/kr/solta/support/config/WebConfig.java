@@ -22,6 +22,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/badges/**")
+                .allowedOrigins("*")
+                .allowedMethods("GET");
+
         registry.addMapping("/**")
                 .allowedOriginPatterns(corsProperties.allowedOrigins().toArray(String[]::new))
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
