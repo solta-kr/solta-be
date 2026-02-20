@@ -100,7 +100,7 @@ public class SolvedService implements SolvedRegister, SolvedFinder, SolvedMemoUp
     public List<SolvedWithTags> findSolvedWithTags(final String name) {
         Member member = getMemberByName(name);
 
-        List<Solved> solveds = solvedRepository.findByMemberOrderByCreatedAtDesc(member);
+        List<Solved> solveds = solvedRepository.findByMemberOrderBySolvedTimeDesc(member);
         Map<Problem, List<Tag>> tagsByProblem = geProblemTags(solveds);
 
         return solveds.stream()

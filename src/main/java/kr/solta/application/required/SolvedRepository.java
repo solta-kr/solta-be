@@ -23,7 +23,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface SolvedRepository extends JpaRepository<Solved, Long> {
 
     @EntityGraph(attributePaths = "problem")
-    List<Solved> findByMemberOrderByCreatedAtDesc(Member member);
+    List<Solved> findByMemberOrderBySolvedTimeDesc(Member member);
 
     @Query("""
                 select new kr.solta.domain.SolvedAverage(s.problem, avg(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end))
