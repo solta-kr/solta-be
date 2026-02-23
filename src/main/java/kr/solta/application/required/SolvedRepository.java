@@ -1,8 +1,10 @@
 package kr.solta.application.required;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.solta.application.required.dto.AllSolvedAverage;
+import kr.solta.application.required.dto.DailyActivity;
 import kr.solta.application.required.dto.BadgeSummaryStats;
 import kr.solta.application.required.dto.DistributionBucketData;
 import kr.solta.application.required.dto.IndependentRatioData;
@@ -425,4 +427,28 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 AND s.solveTimeSeconds > :solveTimeSeconds
             """)
     long countSlowerSolvers(Problem problem, int solveTimeSeconds);
+
+    @Query("""
+                SELECT DISTINCT CAST(FUNCTION('DATE_FORMAT', s.solvedTime, '%Y-%m-%d') AS string)
+                FROM Solved s
+                WHERE s.member.id = :memberId
+                ORDER BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, '%Y-%m-%d') AS string) ASC
+            """)
+    List<String> findDistinctSolvedDatesByMemberId(Long memberId);
+
+    @Query("""
+                SELECT new kr.solta.application.required.dto.DailyActivity(
+                    CAST(FUNCTION('DATE_FORMAT', s.solvedTime, '%Y-%m-%d') AS string),
+                    COUNT(s.id),
+                    COALESCE(SUM(s.solveTimeSeconds), 0),
+                    COALESCE(SUM(CASE WHEN s.solveType = kr.solta.domain.SolveType.SELF THEN 1 ELSE 0 END), 0)
+                )
+                FROM Solved s
+                WHERE s.member.id = :memberId
+                AND CAST(s.solvedTime AS date) >= :startDate
+                AND CAST(s.solvedTime AS date) <= :endDate
+                GROUP BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, '%Y-%m-%d') AS string)
+                ORDER BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, '%Y-%m-%d') AS string) ASC
+            """)
+    List<DailyActivity> findDailyActivityByMemberIdBetween(Long memberId, LocalDate startDate, LocalDate endDate);
 }
