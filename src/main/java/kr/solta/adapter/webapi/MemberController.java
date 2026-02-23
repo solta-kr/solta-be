@@ -1,11 +1,14 @@
 package kr.solta.adapter.webapi;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import kr.solta.adapter.webapi.resolver.Auth;
 import kr.solta.adapter.webapi.response.MemberResponse;
 import kr.solta.adapter.webapi.response.MemberSearchResponse;
+import kr.solta.application.provided.ActivityReader;
 import kr.solta.application.provided.MemberReader;
 import kr.solta.application.provided.SolvedStatisticsReader;
+import kr.solta.application.provided.response.ActivityHeatmapResponse;
 import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.request.TagKey;
 import kr.solta.application.provided.response.IndependentSolveTrendsResponse;
@@ -16,6 +19,7 @@ import kr.solta.domain.Member;
 import kr.solta.domain.SolvedPeriod;
 import kr.solta.domain.TierGroup;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +34,7 @@ public class MemberController {
 
     private final MemberReader memberReader;
     private final SolvedStatisticsReader solvedStatisticsReader;
+    private final ActivityReader activityReader;
 
     @GetMapping("/search")
     public ResponseEntity<MemberSearchResponse> searchMembers(
@@ -71,6 +76,15 @@ public class MemberController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/activity/heatmap/search")
+    public ResponseEntity<ActivityHeatmapResponse> getActivityHeatmap(
+            @RequestParam final String name,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate
+    ) {
+        return ResponseEntity.ok(activityReader.getActivityHeatmap(name, startDate, endDate));
     }
 
     @GetMapping("/{name}/independent-solve-trends")
