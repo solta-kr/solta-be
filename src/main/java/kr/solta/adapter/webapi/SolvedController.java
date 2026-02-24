@@ -61,11 +61,15 @@ public class SolvedController {
     }
 
     @GetMapping("/members/solveds/search")
-    public ResponseEntity<List<RecentSolvedResponse>> findSolvedWithAverages(@RequestParam final String name) {
+    public ResponseEntity<List<RecentSolvedResponse>> findSolvedWithAverages(
+            @RequestParam final String name,
+            @Auth(required = false) final AuthMember authMember
+    ) {
         List<SolvedWithTags> solvedWithTags = solvedFinder.findSolvedWithTags(name);
+        Long viewerMemberId = authMember != null ? authMember.memberId() : null;
 
         List<RecentSolvedResponse> recentSolvedResponses = solvedWithTags.stream()
-                .map(RecentSolvedResponse::from)
+                .map(s -> RecentSolvedResponse.from(s, viewerMemberId))
                 .toList();
 
         return ResponseEntity.ok(recentSolvedResponses);
@@ -94,12 +98,14 @@ public class SolvedController {
     @GetMapping("/members/solveds/retry/search")
     public ResponseEntity<List<RecentSolvedResponse>> findProblemsToRetry(
             @RequestParam final String name,
-            @RequestParam(defaultValue = "LATEST") final SolvedSortType sortType
+            @RequestParam(defaultValue = "LATEST") final SolvedSortType sortType,
+            @Auth(required = false) final AuthMember authMember
     ) {
         List<SolvedWithTags> solvedWithTags = solvedFinder.findProblemsToRetry(name, sortType);
+        Long viewerMemberId = authMember != null ? authMember.memberId() : null;
 
         List<RecentSolvedResponse> recentSolvedResponses = solvedWithTags.stream()
-                .map(RecentSolvedResponse::from)
+                .map(s -> RecentSolvedResponse.from(s, viewerMemberId))
                 .toList();
 
         return ResponseEntity.ok(recentSolvedResponses);
