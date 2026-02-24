@@ -43,6 +43,10 @@ public class AuthArgumentResolver implements HandlerMethodArgumentResolver {
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
+            Auth auth = parameter.getParameterAnnotation(Auth.class);
+            if (auth != null && !auth.required()) {
+                return null;
+            }
             throw new IllegalArgumentException("Authorization 헤더가 없거나 Bearer 형식이 아닙니다.");
         }
 

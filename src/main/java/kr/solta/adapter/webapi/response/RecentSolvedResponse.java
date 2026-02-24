@@ -25,14 +25,15 @@ public record RecentSolvedResponse(
     ) {
     }
 
-    public static RecentSolvedResponse from(final SolvedWithTags solvedWithTags) {
+    public static RecentSolvedResponse from(final SolvedWithTags solvedWithTags, final Long viewerMemberId) {
         Solved solved = solvedWithTags.solved();
+        boolean isOwner = viewerMemberId != null && viewerMemberId.equals(solved.getMember().getId());
 
         return new RecentSolvedResponse(
                 solved.getId(),
                 solved.getSolveType(),
                 solved.getSolveTimeSeconds(),
-                solved.getMemo(),
+                isOwner ? solved.getMemo() : null,
                 new ProblemDetail(
                         solved.getProblem().getId(),
                         solved.getProblem().getBojProblemId(),
