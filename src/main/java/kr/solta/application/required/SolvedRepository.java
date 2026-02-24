@@ -20,9 +20,11 @@ import kr.solta.domain.Solved;
 import kr.solta.domain.SolvedAverage;
 import kr.solta.domain.Tier;
 import kr.solta.domain.TierAverage;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface SolvedRepository extends JpaRepository<Solved, Long> {
 
@@ -451,4 +453,13 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 ORDER BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, '%Y-%m-%d') AS string) ASC
             """)
     List<DailyActivity> findDailyActivityByMemberIdBetween(Long memberId, LocalDate startDate, LocalDate endDate);
+
+    @Query("SELECT COUNT(DISTINCT s.member.id) FROM Solved s WHERE s.solvedTime >= :weekStart")
+    long countDistinctMembersFromTime(@Param("weekStart") LocalDateTime weekStart);
+
+    @Query("SELECT COUNT(s) FROM Solved s WHERE s.solvedTime >= :weekStart")
+    long countSolvesFromTime(@Param("weekStart") LocalDateTime weekStart);
+
+    @Query("SELECT s FROM Solved s JOIN FETCH s.member m JOIN FETCH s.problem p ORDER BY s.solvedTime DESC")
+    List<Solved> findRecentSolvesWithDetails(Pageable pageable);
 }
