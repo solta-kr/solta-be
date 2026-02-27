@@ -97,6 +97,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 select new kr.solta.application.required.dto.AllSolvedAverage(count(s.id), coalesce(sum(s.solveTimeSeconds), 0), avg(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end))
                 from Solved s
                 where s.member = :member
+                AND s.problem.tier != kr.solta.domain.Tier.UNRATED
             """)
     AllSolvedAverage findAllSolvedAverage(Member member);
 
@@ -109,6 +110,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 FROM Solved s
                 WHERE s.member.id = :memberId
                 AND s.solveType = kr.solta.domain.SolveType.SELF
+                AND s.problem.tier != kr.solta.domain.Tier.UNRATED
                 AND (:startDate IS NULL OR s.solvedTime >= :startDate)
                 GROUP BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
                 ORDER BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
@@ -176,6 +178,7 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
                 JOIN pt.tag t
                 WHERE s.member.id = :memberId
                 AND s.solveType = kr.solta.domain.SolveType.SELF
+                AND s.problem.tier != kr.solta.domain.Tier.UNRATED
                 AND (:startDate IS NULL OR s.solvedTime >= :startDate)
                 AND t.key = :tagKey
                 GROUP BY CAST(FUNCTION('DATE_FORMAT', s.solvedTime, :dateFormat) AS string)
