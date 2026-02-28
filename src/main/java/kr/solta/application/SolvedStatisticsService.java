@@ -213,7 +213,7 @@ public class SolvedStatisticsService implements SolvedStatisticsReader {
         return solvedRepository.findTagWeaknessByMember(member.getId(), tagKeys)
                 .stream()
                 .map(data -> new TagWeakness(data.tag(), data.totalCount(), data.selfCount(), data.avgSolveSeconds(), userOverallAvg))
-                .sorted(Comparator.comparingDouble(TagWeakness::getFinalScore).reversed())
+                .sorted(Comparator.comparingDouble(TagWeakness::getWeaknessScore).reversed())
                 .toList();
     }
 
