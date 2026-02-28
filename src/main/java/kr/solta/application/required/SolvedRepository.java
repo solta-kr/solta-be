@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import kr.solta.application.required.dto.AllSolvedAverage;
 import kr.solta.application.required.dto.DailyActivity;
+import kr.solta.application.required.dto.TagWeaknessData;
 import kr.solta.application.required.dto.BadgeSummaryStats;
 import kr.solta.application.required.dto.DistributionBucketData;
 import kr.solta.application.required.dto.IndependentRatioData;
@@ -465,4 +466,22 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
 
     @Query("SELECT s FROM Solved s JOIN FETCH s.member m JOIN FETCH s.problem p ORDER BY s.solvedTime DESC")
     List<Solved> findRecentSolvesWithDetails(Pageable pageable);
+
+    @Query("""
+                SELECT new kr.solta.application.required.dto.TagWeaknessData(
+                    t,
+                    COUNT(s.id),
+                    COALESCE(SUM(CASE WHEN s.solveType = kr.solta.domain.SolveType.SELF THEN 1 ELSE 0 END), 0),
+                    AVG(CASE WHEN s.solveType = kr.solta.domain.SolveType.SELF THEN s.solveTimeSeconds ELSE NULL END)
+                )
+                FROM Solved s
+                JOIN s.problem p
+                JOIN ProblemTag pt ON pt.problem = p
+                JOIN pt.tag t
+                WHERE s.member.id = :memberId
+                AND t.key IN :tagKeys
+                GROUP BY t.id, t.key, t.korName
+                HAVING COUNT(s.id) >= 3
+            """)
+    List<TagWeaknessData> findTagWeaknessByMember(@Param("memberId") Long memberId, @Param("tagKeys") List<String> tagKeys);
 }

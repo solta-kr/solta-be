@@ -1,6 +1,8 @@
 package kr.solta.application;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,6 +26,7 @@ import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.SolveTimeDistribution;
 import kr.solta.domain.SolvedPeriod;
+import kr.solta.domain.TagWeakness;
 import kr.solta.domain.Tier;
 import kr.solta.domain.TierGroup;
 import lombok.RequiredArgsConstructor;
@@ -195,6 +198,23 @@ public class SolvedStatisticsService implements SolvedStatisticsReader {
                 ? solvedRepository.findIndependentRatioTrendsByTag(memberId, startDate, dateFormat, tagKey.getKey())
                 : solvedRepository.findIndependentRatioTrendsByTiersAndTag(memberId, startDate, dateFormat, tiers,
                         tagKey.getKey());
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<TagWeakness> getTagWeakness(final String name) {
+        Member member = getMemberByName(name);
+        Double userOverallAvg = solvedRepository.findAllSolvedAverage(member).totalSolvedAverageTime();
+
+        List<String> tagKeys = Arrays.stream(TagKey.values())
+                .map(TagKey::getKey)
+                .toList();
+
+        return solvedRepository.findTagWeaknessByMember(member.getId(), tagKeys)
+                .stream()
+                .map(data -> new TagWeakness(data.tag(), data.totalCount(), data.selfCount(), data.avgSolveSeconds(), userOverallAvg))
+                .sorted(Comparator.comparingDouble(TagWeakness::getFinalScore).reversed())
+                .toList();
     }
 
     private Problem getProblemByBojId(final long bojProblemId) {

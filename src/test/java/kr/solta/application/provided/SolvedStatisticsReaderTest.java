@@ -3,9 +3,11 @@ package kr.solta.application.provided;
 import static kr.solta.support.TestFixtures.createMember;
 import static kr.solta.support.TestFixtures.createProblem;
 import static kr.solta.support.TestFixtures.createSolved;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import kr.solta.application.provided.request.TagKey;
 import kr.solta.application.provided.response.IndependentRatioPoint;
 import kr.solta.application.provided.response.IndependentSolveTrendsResponse;
@@ -20,8 +22,10 @@ import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.ProblemTag;
 import kr.solta.domain.SolveType;
+import kr.solta.domain.Solved;
 import kr.solta.domain.SolvedPeriod;
 import kr.solta.domain.Tag;
+import kr.solta.domain.TagWeakness;
 import kr.solta.domain.Tier;
 import kr.solta.domain.TierGroup;
 import kr.solta.support.IntegrationTest;
@@ -314,6 +318,132 @@ class SolvedStatisticsReaderTest extends IntegrationTest {
             softly.assertThat(day2.averageSeconds()).isEqualTo(2400.0);
             softly.assertThat(day2.solvedCount()).isEqualTo(1L);
         });
+    }
+
+    @Test
+    void 태그별_약점_분석을_조회할_수_있다() {
+        //given
+        Member member = memberRepository.save(createMember(1L, "testUser"));
+
+        Tag dpTag = tagRepository.save(new Tag(1, "dp", "다이나믹 프로그래밍"));
+        Problem dp1 = problemRepository.save(createProblem("DP1", 1000L, Tier.G1));
+        Problem dp2 = problemRepository.save(createProblem("DP2", 1001L, Tier.G2));
+        Problem dp3 = problemRepository.save(createProblem("DP3", 1002L, Tier.G3));
+        problemTagRepository.save(new ProblemTag(dp1, dpTag));
+        problemTagRepository.save(new ProblemTag(dp2, dpTag));
+        problemTagRepository.save(new ProblemTag(dp3, dpTag));
+
+        // 2개 SELF + 1개 SOLUTION
+        solvedRepository.save(createSolved(3600, SolveType.SELF, member, dp1));
+        solvedRepository.save(createSolved(1800, SolveType.SELF, member, dp2));
+        solvedRepository.save(Solved.register(1800, SolveType.SOLUTION, member, dp3, java.time.LocalDateTime.now(), null));
+
+        //when
+        List<TagWeakness> result = solvedStatisticsReader.getTagWeakness("testUser");
+
+        //then
+        assertThat(result).hasSize(1);
+        assertSoftly(softly -> {
+            softly.assertThat(result.get(0).getTag().getKey()).isEqualTo("dp");
+            softly.assertThat(result.get(0).getTotalCount()).isEqualTo(3);
+            softly.assertThat(result.get(0).getSelfSolveRate()).isEqualTo(66); // 2/3 = 66%
+        });
+    }
+
+    @Test
+    void TagKey에_없는_태그의_풀이는_결과에_포함되지_않는다() {
+        //given
+        Member member = memberRepository.save(createMember(1L, "testUser"));
+
+        Tag unknownTag = tagRepository.save(new Tag(1, "sorting", "정렬")); // TagKey에 없는 태그
+        Problem p1 = problemRepository.save(createProblem("정렬1", 1000L, Tier.G1));
+        Problem p2 = problemRepository.save(createProblem("정렬2", 1001L, Tier.G2));
+        Problem p3 = problemRepository.save(createProblem("정렬3", 1002L, Tier.G3));
+        problemTagRepository.save(new ProblemTag(p1, unknownTag));
+        problemTagRepository.save(new ProblemTag(p2, unknownTag));
+        problemTagRepository.save(new ProblemTag(p3, unknownTag));
+
+        solvedRepository.save(createSolved(3600, SolveType.SELF, member, p1));
+        solvedRepository.save(createSolved(1800, SolveType.SELF, member, p2));
+        solvedRepository.save(createSolved(2400, SolveType.SELF, member, p3));
+
+        //when
+        List<TagWeakness> result = solvedStatisticsReader.getTagWeakness("testUser");
+
+        //then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void 풀이가_3개_미만인_태그는_결과에_포함되지_않는다() {
+        //given
+        Member member = memberRepository.save(createMember(1L, "testUser"));
+
+        Tag dpTag = tagRepository.save(new Tag(1, "dp", "다이나믹 프로그래밍"));
+        Problem p1 = problemRepository.save(createProblem("DP1", 1000L, Tier.G1));
+        Problem p2 = problemRepository.save(createProblem("DP2", 1001L, Tier.G2));
+        problemTagRepository.save(new ProblemTag(p1, dpTag));
+        problemTagRepository.save(new ProblemTag(p2, dpTag));
+
+        solvedRepository.save(createSolved(3600, SolveType.SELF, member, p1));
+        solvedRepository.save(createSolved(1800, SolveType.SELF, member, p2));
+
+        //when
+        List<TagWeakness> result = solvedStatisticsReader.getTagWeakness("testUser");
+
+        //then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void 결과는_finalScore_내림차순으로_정렬된다() {
+        //given
+        Member member = memberRepository.save(createMember(1L, "testUser"));
+
+        // DP: 자력풀이율 낮음 (약점 강함)
+        Tag dpTag = tagRepository.save(new Tag(1, "dp", "다이나믹 프로그래밍"));
+        Problem dp1 = problemRepository.save(createProblem("DP1", 1000L, Tier.G1));
+        Problem dp2 = problemRepository.save(createProblem("DP2", 1001L, Tier.G2));
+        Problem dp3 = problemRepository.save(createProblem("DP3", 1002L, Tier.G3));
+        problemTagRepository.save(new ProblemTag(dp1, dpTag));
+        problemTagRepository.save(new ProblemTag(dp2, dpTag));
+        problemTagRepository.save(new ProblemTag(dp3, dpTag));
+        solvedRepository.save(Solved.register(3600, SolveType.SOLUTION, member, dp1, java.time.LocalDateTime.now(), null));
+        solvedRepository.save(Solved.register(1800, SolveType.SOLUTION, member, dp2, java.time.LocalDateTime.now(), null));
+        solvedRepository.save(Solved.register(2400, SolveType.SOLUTION, member, dp3, java.time.LocalDateTime.now(), null));
+
+        // 그리디: 자력풀이율 높음 (약점 약함)
+        Tag greedyTag = tagRepository.save(new Tag(2, "greedy", "그리디 알고리즘"));
+        Problem g1 = problemRepository.save(createProblem("그리디1", 2000L, Tier.S1));
+        Problem g2 = problemRepository.save(createProblem("그리디2", 2001L, Tier.S2));
+        Problem g3 = problemRepository.save(createProblem("그리디3", 2002L, Tier.S3));
+        problemTagRepository.save(new ProblemTag(g1, greedyTag));
+        problemTagRepository.save(new ProblemTag(g2, greedyTag));
+        problemTagRepository.save(new ProblemTag(g3, greedyTag));
+        solvedRepository.save(createSolved(1200, SolveType.SELF, member, g1));
+        solvedRepository.save(createSolved(1200, SolveType.SELF, member, g2));
+        solvedRepository.save(createSolved(1200, SolveType.SELF, member, g3));
+
+        //when
+        List<TagWeakness> result = solvedStatisticsReader.getTagWeakness("testUser");
+
+        //then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getTag().getKey()).isEqualTo("dp");       // 약점 강함 → 먼저
+        assertThat(result.get(1).getTag().getKey()).isEqualTo("greedy");   // 약점 약함 → 나중
+        assertThat(result.get(0).getFinalScore()).isGreaterThan(result.get(1).getFinalScore());
+    }
+
+    @Test
+    void 풀이가_없는_사용자는_빈_목록을_반환한다() {
+        //given
+        memberRepository.save(createMember(1L, "emptyUser"));
+
+        //when
+        List<TagWeakness> result = solvedStatisticsReader.getTagWeakness("emptyUser");
+
+        //then
+        assertThat(result).isEmpty();
     }
 
     @Test
