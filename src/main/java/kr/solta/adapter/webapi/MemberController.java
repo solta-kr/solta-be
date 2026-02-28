@@ -2,6 +2,7 @@ package kr.solta.adapter.webapi;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import kr.solta.adapter.webapi.resolver.Auth;
 import kr.solta.adapter.webapi.response.MemberResponse;
 import kr.solta.adapter.webapi.response.MemberSearchResponse;
@@ -15,6 +16,7 @@ import kr.solta.application.provided.response.IndependentSolveTrendsResponse;
 import kr.solta.application.provided.response.MemberPage;
 import kr.solta.application.provided.response.MemberProfileResponse;
 import kr.solta.application.provided.response.SolveTimeTrendsResponse;
+import kr.solta.adapter.webapi.response.TagWeaknessResponse;
 import kr.solta.domain.Member;
 import kr.solta.domain.SolvedPeriod;
 import kr.solta.domain.TierGroup;
@@ -103,5 +105,10 @@ public class MemberController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{name}/tag-weakness")
+    public ResponseEntity<List<TagWeaknessResponse>> getTagWeakness(@PathVariable final String name) {
+        return ResponseEntity.ok(TagWeaknessResponse.from(solvedStatisticsReader.getTagWeakness(name)));
     }
 }
