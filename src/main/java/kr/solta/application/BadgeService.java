@@ -1,5 +1,7 @@
 package kr.solta.application;
 
+import static kr.solta.domain.TierGroup.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,33 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class BadgeService implements BadgeReader {
-
-    private static final List<TierGroup> BADGE_TIER_GROUPS = List.of(
-            TierGroup.BRONZE,
-            TierGroup.SILVER,
-            TierGroup.GOLD,
-            TierGroup.PLATINUM,
-            TierGroup.DIAMOND,
-            TierGroup.RUBY
-    );
-
-    private static final Map<TierGroup, String> TIER_LABELS = Map.of(
-            TierGroup.BRONZE, "B",
-            TierGroup.SILVER, "S",
-            TierGroup.GOLD, "G",
-            TierGroup.PLATINUM, "P",
-            TierGroup.DIAMOND, "D",
-            TierGroup.RUBY, "R"
-    );
-
-    private static final Map<TierGroup, String> TIER_COLORS = Map.of(
-            TierGroup.BRONZE, "hsl(30,70%,45%)",
-            TierGroup.SILVER, "hsl(210,15%,60%)",
-            TierGroup.GOLD, "hsl(45,100%,50%)",
-            TierGroup.PLATINUM, "hsl(175,60%,55%)",
-            TierGroup.DIAMOND, "hsl(200,100%,65%)",
-            TierGroup.RUBY, "hsl(350,85%,55%)"
-    );
 
     private final MemberRepository memberRepository;
     private final SolvedRepository solvedRepository;
@@ -79,12 +54,8 @@ public class BadgeService implements BadgeReader {
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다. username: " + username));
 
         BadgeSummaryStats summary = solvedRepository.findBadgeSummaryStats(member.getId());
-        Integer selfSolveRateRaw = solvedRepository.findSelfSolveRate(member.getId());
-        int selfSolveRate = selfSolveRateRaw != null ? selfSolveRateRaw : 0;
 
-        List<Tier> allBadgeTiers = BADGE_TIER_GROUPS.stream()
-                .flatMap(tg -> tg.getTiers().stream())
-                .toList();
+        List<Tier> allBadgeTiers = getRatedTiers();
         List<TierGroupStat> tierGroupStats = solvedRepository.findBadgeTierGroupStats(member.getId(), allBadgeTiers);
 
         Map<TierGroup, Double> avgSecondsByGroup = mapToTierGroupAvg(tierGroupStats);
@@ -94,14 +65,14 @@ public class BadgeService implements BadgeReader {
 
         List<TierDataItem> tierData = buildTierDataItems(avgSecondsByGroup);
 
-        return new BadgeStatsResponse(username, totalMinutes, avgMinutes, selfSolveRate, tierData);
+        return new BadgeStatsResponse(username, totalMinutes, avgMinutes, summary.selfSolveRate(), tierData);
     }
 
     private Map<TierGroup, Double> mapToTierGroupAvg(List<TierGroupStat> stats) {
         Map<Tier, TierGroupStat> statByTier = stats.stream()
                 .collect(Collectors.toMap(TierGroupStat::tier, s -> s));
 
-        return BADGE_TIER_GROUPS.stream()
+        return getRatedTierGroups().stream()
                 .collect(Collectors.toMap(
                         tg -> tg,
                         tg -> {
@@ -123,14 +94,10 @@ public class BadgeService implements BadgeReader {
 
     private List<TierDataItem> buildTierDataItems(Map<TierGroup, Double> avgSecondsByGroup) {
         List<TierDataItem> result = new ArrayList<>();
-        for (TierGroup tg : BADGE_TIER_GROUPS) {
+        for (TierGroup tg : getRatedTierGroups()) {
             double avgSeconds = avgSecondsByGroup.getOrDefault(tg, 0.0);
             int avgMinutes = (int) Math.round(avgSeconds / 60.0);
-            result.add(new TierDataItem(
-                    TIER_LABELS.get(tg),
-                    avgMinutes,
-                    TIER_COLORS.get(tg)
-            ));
+            result.add(new TierDataItem(tg.getLabel(), avgMinutes, tg.getColor()));
         }
         return result;
     }

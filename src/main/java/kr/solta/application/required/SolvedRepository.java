@@ -255,26 +255,13 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
     @Query("""
                 SELECT new kr.solta.application.required.dto.BadgeSummaryStats(
                     coalesce(sum(s.solveTimeSeconds), 0),
-                    coalesce(avg(s.solveTimeSeconds), 0.0),
-                    count(s.id)
+                    coalesce(avg(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end), 0.0),
+                    CAST(ROUND(100.0 * AVG(CASE WHEN s.solveType = kr.solta.domain.SolveType.SELF THEN 1.0 ELSE 0.0 END)) AS integer)
                 )
                 FROM Solved s
                 WHERE s.member.id = :memberId
-                AND s.solveType = kr.solta.domain.SolveType.SELF
             """)
     BadgeSummaryStats findBadgeSummaryStats(Long memberId);
-
-    @Query("""
-                SELECT CAST(
-                    ROUND(
-                        100.0 * SUM(CASE WHEN s.solveType = kr.solta.domain.SolveType.SELF THEN 1 ELSE 0 END)
-                        / NULLIF(COUNT(s.id), 0)
-                    ) AS integer
-                )
-                FROM Solved s
-                WHERE s.member.id = :memberId
-            """)
-    Integer findSelfSolveRate(Long memberId);
 
     @Query("""
                 SELECT new kr.solta.application.required.dto.TierGroupStat(
