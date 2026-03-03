@@ -598,3 +598,35 @@ FROM (SELECT 0 as n
                      UNION
                      SELECT 18) as c
 WHERE EXISTS (SELECT 1 FROM problem LIMIT 1);
+
+-- 복습 스케줄 테스트용 SOLUTION 풀이 기록 (명시적 ID로 review_schedule FK 참조용)
+INSERT INTO solved (id, solve_time_seconds, solve_type, member_id, problem_id, solved_time, memo, created_at, updated_at)
+SELECT 9001, 1800, 'SOLUTION', 1, p.id, '2026-02-24 10:30:00', NULL, NOW(), NOW() FROM problem p WHERE p.boj_problem_id = 1260 LIMIT 1;
+
+INSERT INTO solved (id, solve_time_seconds, solve_type, member_id, problem_id, solved_time, memo, created_at, updated_at)
+SELECT 9002, 600, 'SOLUTION', 1, p.id, '2026-02-20 14:00:00', NULL, NOW(), NOW() FROM problem p WHERE p.boj_problem_id = 2798 LIMIT 1;
+
+INSERT INTO solved (id, solve_time_seconds, solve_type, member_id, problem_id, solved_time, memo, created_at, updated_at)
+SELECT 9003, 900, 'SOLUTION', 1, p.id, '2026-03-01 09:00:00', NULL, NOW(), NOW() FROM problem p WHERE p.boj_problem_id = 11286 LIMIT 1;
+
+INSERT INTO solved (id, solve_time_seconds, solve_type, member_id, problem_id, solved_time, memo, created_at, updated_at)
+SELECT 9004, 720, 'SOLUTION', 1, p.id, '2026-03-02 11:00:00', NULL, NOW(), NOW() FROM problem p WHERE p.boj_problem_id = 1927 LIMIT 1;
+
+INSERT INTO solved (id, solve_time_seconds, solve_type, member_id, problem_id, solved_time, memo, created_at, updated_at)
+SELECT 9005, 300, 'SOLUTION', 1, p.id, '2026-03-02 15:00:00', NULL, NOW(), NOW() FROM problem p WHERE p.boj_problem_id = 2609 LIMIT 1;
+
+-- 복습 스케줄 (밀린 2개 + 예정 3개)
+INSERT INTO review_schedule (member_id, problem_id, origin_solved_id, scheduled_date, round, interval_days, status, created_at, updated_at)
+SELECT 1, p.id, 9001, '2026-02-27', 1, 3, 'PENDING', NOW(), NOW() FROM problem p WHERE p.boj_problem_id = 1260 LIMIT 1;
+
+INSERT INTO review_schedule (member_id, problem_id, origin_solved_id, scheduled_date, round, interval_days, status, created_at, updated_at)
+SELECT 1, p.id, 9002, '2026-02-25', 2, 6, 'PENDING', NOW(), NOW() FROM problem p WHERE p.boj_problem_id = 2798 LIMIT 1;
+
+INSERT INTO review_schedule (member_id, problem_id, origin_solved_id, scheduled_date, round, interval_days, status, created_at, updated_at)
+SELECT 1, p.id, 9003, '2026-03-05', 1, 3, 'PENDING', NOW(), NOW() FROM problem p WHERE p.boj_problem_id = 11286 LIMIT 1;
+
+INSERT INTO review_schedule (member_id, problem_id, origin_solved_id, scheduled_date, round, interval_days, status, created_at, updated_at)
+SELECT 1, p.id, 9004, '2026-03-09', 1, 7, 'PENDING', NOW(), NOW() FROM problem p WHERE p.boj_problem_id = 1927 LIMIT 1;
+
+INSERT INTO review_schedule (member_id, problem_id, origin_solved_id, scheduled_date, round, interval_days, status, created_at, updated_at)
+SELECT 1, p.id, 9005, '2026-03-09', 1, 7, 'PENDING', NOW(), NOW() FROM problem p WHERE p.boj_problem_id = 2609 LIMIT 1;

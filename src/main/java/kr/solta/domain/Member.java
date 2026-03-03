@@ -33,6 +33,9 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private String avatarUrl;
 
+    @Column
+    private Integer defaultReviewInterval;
+
     public static Member create(final Long githubId, final String name, final String avatarUrl) {
         Member member = new Member();
 
@@ -45,6 +48,14 @@ public class Member extends BaseEntity {
 
     public void updateBojId(final String bojId) {
         this.bojId = requireNonNull(bojId);
+    }
+
+    public int getEffectiveReviewInterval() {
+        return defaultReviewInterval != null ? defaultReviewInterval : 3;
+    }
+
+    public void updateDefaultReviewInterval(final int interval) {
+        this.defaultReviewInterval = interval;
     }
 
     @Override

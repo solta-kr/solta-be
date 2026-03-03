@@ -1,9 +1,11 @@
 package kr.solta.application;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import kr.solta.application.exception.NotFoundEntityException;
 import kr.solta.application.provided.SolvedFinder;
@@ -17,11 +19,14 @@ import kr.solta.application.provided.response.SolvedWithTags;
 import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.ProblemRepository;
 import kr.solta.application.required.ProblemTagRepository;
+import kr.solta.application.required.ReviewScheduleRepository;
 import kr.solta.application.required.SolvedRepository;
 import kr.solta.application.required.dto.SolvedStats;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.ProblemTag;
+import kr.solta.domain.ReviewSchedule;
+import kr.solta.domain.ReviewStatus;
 import kr.solta.domain.SolveType;
 import kr.solta.domain.Solved;
 import kr.solta.domain.Tag;
@@ -44,6 +49,7 @@ public class SolvedService implements SolvedRegister, SolvedFinder, SolvedMemoUp
     private final ProblemRepository problemRepository;
     private final SolvedRepository solvedRepository;
     private final ProblemTagRepository problemTagRepository;
+    private final ReviewScheduleRepository reviewScheduleRepository;
 
     @Override
     public Solved register(final AuthMember authMember, final SolvedRegisterRequest solvedRegisterRequest) {
@@ -58,8 +64,26 @@ public class SolvedService implements SolvedRegister, SolvedFinder, SolvedMemoUp
                 LocalDateTime.now(),
                 solvedRegisterRequest.memo()
         );
+        solvedRepository.save(solved);
 
-        return solvedRepository.save(solved);
+        handleReviewSchedule(solvedMember, problem, solved, solvedRegisterRequest.solveType());
+        return solved;
+    }
+
+    private void handleReviewSchedule(final Member member, final Problem problem, final Solved solved, final SolveType solveType) {
+        Optional<ReviewSchedule> existing = reviewScheduleRepository.findByMemberAndProblemAndStatus(member, problem, ReviewStatus.PENDING);
+
+        if (solveType == SolveType.SELF) {
+            existing.ifPresent(ReviewSchedule::complete);
+            return;
+        }
+
+        if (existing.isPresent()) {
+            existing.get().advanceRound(LocalDate.now());
+            return;
+        }
+
+        reviewScheduleRepository.save(ReviewSchedule.create(member, problem, solved, LocalDate.now()));
     }
 
     @Transactional(readOnly = true)

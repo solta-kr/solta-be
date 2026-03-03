@@ -1,9 +1,11 @@
 package kr.solta.support;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
 import kr.solta.domain.ProblemTag;
+import kr.solta.domain.ReviewSchedule;
 import kr.solta.domain.SolveType;
 import kr.solta.domain.Solved;
 import kr.solta.domain.Tag;
@@ -71,5 +73,13 @@ public class TestFixtures {
             LocalDateTime solvedTime
     ) {
         return Solved.register(solveTimeSeconds, solveType, member, problem, solvedTime, null);
+    }
+
+    public static ReviewSchedule createReviewSchedule(Member member, Problem problem, Solved originSolved) {
+        return ReviewSchedule.create(member, problem, originSolved, LocalDate.now());
+    }
+
+    public static ReviewSchedule createReviewSchedule(Member member, Problem problem, Solved originSolved, LocalDate today) {
+        return ReviewSchedule.create(member, problem, originSolved, today);
     }
 }

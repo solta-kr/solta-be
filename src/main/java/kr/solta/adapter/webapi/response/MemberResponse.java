@@ -7,7 +7,8 @@ public record MemberResponse(
         String name,
         Long githubId,
         String bojId,
-        String avatarUrl
+        String avatarUrl,
+        int defaultReviewInterval
 ) {
     public static MemberResponse from(Member member) {
         return new MemberResponse(
@@ -15,7 +16,8 @@ public record MemberResponse(
                 member.getName(),
                 member.getGithubId(),
                 member.getBojId(),
-                member.getAvatarUrl()
+                member.getAvatarUrl(),
+                member.getEffectiveReviewInterval()
         );
     }
 }
