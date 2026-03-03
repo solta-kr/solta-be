@@ -11,9 +11,11 @@ import kr.solta.application.provided.request.SolvedRegisterRequest;
 import kr.solta.application.required.MemberRepository;
 import kr.solta.application.required.ProblemRepository;
 import kr.solta.application.required.ProblemTagRepository;
+import kr.solta.application.required.ReviewScheduleRepository;
 import kr.solta.application.required.TagRepository;
 import kr.solta.domain.Member;
 import kr.solta.domain.Problem;
+import kr.solta.domain.ReviewStatus;
 import kr.solta.domain.SolveType;
 import kr.solta.domain.Solved;
 import kr.solta.domain.Tag;
@@ -38,6 +40,9 @@ class SolvedRegisterTest extends IntegrationTest {
 
     @Autowired
     private ProblemTagRepository problemTagRepository;
+
+    @Autowired
+    private ReviewScheduleRepository reviewScheduleRepository;
 
     @Test
     void solved를_등록할_수_있다() {
@@ -117,5 +122,79 @@ class SolvedRegisterTest extends IntegrationTest {
 
         //then
         assertThat(solved.getMemo()).isEqualTo(memo);
+    }
+
+    // ─── 복습 스케줄 트리거 ────────────────────────────────────────────────────
+
+    @Test
+    void SOLUTION으로_풀면_복습_스케줄이_생성된다() {
+        //given
+        Member member = memberRepository.save(createMember());
+        Problem problem = problemRepository.save(createProblem());
+        SolvedRegisterRequest request = new SolvedRegisterRequest(SolveType.SOLUTION, problem.getBojProblemId(), 1200, null);
+
+        //when
+        solvedRegister.register(new AuthMember(member.getId()), request);
+
+        //then
+        var schedules = reviewScheduleRepository.findAllPendingByMemberOrderByScheduledDateAsc(member);
+        assertThat(schedules).hasSize(1);
+        assertThat(schedules.get(0).getStatus()).isEqualTo(ReviewStatus.PENDING);
+        assertThat(schedules.get(0).getRound()).isEqualTo(1);
+    }
+
+    @Test
+    void SELF로_풀면_복습_스케줄이_생성되지_않는다() {
+        //given
+        Member member = memberRepository.save(createMember());
+        Problem problem = problemRepository.save(createProblem());
+        SolvedRegisterRequest request = new SolvedRegisterRequest(SolveType.SELF, problem.getBojProblemId(), 1200, null);
+
+        //when
+        solvedRegister.register(new AuthMember(member.getId()), request);
+
+        //then
+        var schedules = reviewScheduleRepository.findAllPendingByMemberOrderByScheduledDateAsc(member);
+        assertThat(schedules).isEmpty();
+    }
+
+    @Test
+    void PENDING_스케줄이_있을때_SOLUTION으로_다시_풀면_회차가_올라간다() {
+        //given
+        Member member = memberRepository.save(createMember());
+        Problem problem = problemRepository.save(createProblem());
+        SolvedRegisterRequest request = new SolvedRegisterRequest(SolveType.SOLUTION, problem.getBojProblemId(), 1200, null);
+        solvedRegister.register(new AuthMember(member.getId()), request);
+
+        //when
+        solvedRegister.register(new AuthMember(member.getId()), request);
+
+        //then
+        var schedules = reviewScheduleRepository.findAllPendingByMemberOrderByScheduledDateAsc(member);
+        assertThat(schedules).hasSize(1);
+        assertThat(schedules.get(0).getRound()).isEqualTo(2);
+        assertThat(schedules.get(0).getIntervalDays()).isEqualTo(6);
+    }
+
+    @Test
+    void PENDING_스케줄이_있을때_SELF로_풀면_복습이_완료된다() {
+        //given
+        Member member = memberRepository.save(createMember());
+        Problem problem = problemRepository.save(createProblem());
+        solvedRegister.register(new AuthMember(member.getId()),
+                new SolvedRegisterRequest(SolveType.SOLUTION, problem.getBojProblemId(), 1200, null));
+
+        //when
+        solvedRegister.register(new AuthMember(member.getId()),
+                new SolvedRegisterRequest(SolveType.SELF, problem.getBojProblemId(), 900, null));
+
+        //then
+        var pending = reviewScheduleRepository.findAllPendingByMemberOrderByScheduledDateAsc(member);
+        assertThat(pending).isEmpty();
+
+        var completed = reviewScheduleRepository.findCompletedByMemberOrderByUpdatedAtDesc(
+                member, org.springframework.data.domain.PageRequest.of(0, 10));
+        assertThat(completed).hasSize(1);
+        assertThat(completed.get(0).getStatus()).isEqualTo(ReviewStatus.COMPLETED);
     }
 }
