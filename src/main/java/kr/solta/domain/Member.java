@@ -36,6 +36,12 @@ public class Member extends BaseEntity {
     @Column
     private Integer defaultReviewInterval;
 
+    @Column(nullable = false)
+    private int totalXp = 0;
+
+    @Column(nullable = false)
+    private int level = 1;
+
     public static Member create(final Long githubId, final String name, final String avatarUrl) {
         Member member = new Member();
 
@@ -56,6 +62,11 @@ public class Member extends BaseEntity {
 
     public void updateDefaultReviewInterval(final int interval) {
         this.defaultReviewInterval = interval;
+    }
+
+    public void addXp(final int xp) {
+        this.totalXp += xp;
+        this.level = LevelRange.calculateLevel(this.totalXp);
     }
 
     @Override

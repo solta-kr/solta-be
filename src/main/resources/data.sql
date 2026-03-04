@@ -257,8 +257,8 @@ SET created_at = NOW(),
 WHERE 1 = 1;
 
 -- 테스트용 Member 추가 (dlwogns3413)
-INSERT INTO member (id, name, github_id, boj_id, avatar_url, created_at, updated_at)
-VALUES (1, 'dlwogns3413', 12345678, 'dlwogns3413', 'https://avatars.githubusercontent.com/u/12345678?v=4', NOW(), NOW())
+INSERT INTO member (id, name, github_id, boj_id, avatar_url, total_xp, level, created_at, updated_at)
+VALUES (1, 'dlwogns3413', 12345678, 'dlwogns3413', 'https://avatars.githubusercontent.com/u/12345678?v=4', 0, 1, NOW(), NOW())
 ON DUPLICATE KEY UPDATE name = name;
 
 -- 테스트용 Solved 데이터 추가 (그래프 테스트용)
