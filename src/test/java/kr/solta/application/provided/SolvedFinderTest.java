@@ -79,8 +79,8 @@ class SolvedFinderTest extends IntegrationTest {
         //then
         assertThat(result).hasSize(2)
                 .containsExactly(
-                        new SolvedWithTags(solved2, List.of(tag2, tag3)),
-                        new SolvedWithTags(solved1, List.of(tag1, tag2))
+                        new SolvedWithTags(solved2, List.of(tag2, tag3), null),
+                        new SolvedWithTags(solved1, List.of(tag1, tag2), null)
                 );
     }
 
@@ -329,8 +329,8 @@ class SolvedFinderTest extends IntegrationTest {
         //then
         assertThat(result).hasSize(2)
                 .containsExactly(
-                        new SolvedWithTags(solved2, List.of(tag2, tag3)),
-                        new SolvedWithTags(solved1, List.of(tag1, tag2))
+                        new SolvedWithTags(solved2, List.of(tag2, tag3), null),
+                        new SolvedWithTags(solved1, List.of(tag1, tag2), null)
                 );
     }
 
