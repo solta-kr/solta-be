@@ -9,8 +9,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import kr.solta.application.exception.NotFoundEntityException;
 import kr.solta.application.provided.SolvedFinder;
+import kr.solta.application.required.dto.SolvedXpRow;
 import kr.solta.application.provided.SolvedMemoUpdater;
 import kr.solta.application.provided.SolvedRegister;
+import kr.solta.application.provided.XpEarner;
 import kr.solta.application.provided.request.AuthMember;
 import kr.solta.application.provided.request.SolvedRegisterRequest;
 import kr.solta.application.provided.request.SolvedSortType;
@@ -50,6 +52,7 @@ public class SolvedService implements SolvedRegister, SolvedFinder, SolvedMemoUp
     private final SolvedRepository solvedRepository;
     private final ProblemTagRepository problemTagRepository;
     private final ReviewScheduleRepository reviewScheduleRepository;
+    private final XpEarner xpEarner;
 
     @Override
     public Solved register(final AuthMember authMember, final SolvedRegisterRequest solvedRegisterRequest) {
@@ -65,6 +68,7 @@ public class SolvedService implements SolvedRegister, SolvedFinder, SolvedMemoUp
                 solvedRegisterRequest.memo()
         );
         solvedRepository.save(solved);
+        xpEarner.earnXp(solvedMember.getId(), solved.getId());
 
         handleReviewSchedule(solvedMember, problem, solved, solvedRegisterRequest.solveType());
         return solved;
@@ -124,13 +128,15 @@ public class SolvedService implements SolvedRegister, SolvedFinder, SolvedMemoUp
     public List<SolvedWithTags> findSolvedWithTags(final String name) {
         Member member = getMemberByName(name);
 
-        List<Solved> solveds = solvedRepository.findByMemberOrderBySolvedTimeDesc(member);
+        List<SolvedXpRow> rows = solvedRepository.findByMemberWithXpOrderBySolvedTimeDesc(member);
+        List<Solved> solveds = rows.stream().map(SolvedXpRow::solved).toList();
         Map<Problem, List<Tag>> tagsByProblem = geProblemTags(solveds);
 
-        return solveds.stream()
-                .map(solved -> new SolvedWithTags(
-                        solved,
-                        tagsByProblem.getOrDefault(solved.getProblem(), List.of())
+        return rows.stream()
+                .map(row -> new SolvedWithTags(
+                        row.solved(),
+                        tagsByProblem.getOrDefault(row.solved().getProblem(), List.of()),
+                        row.xpAmount()
                 ))
                 .toList();
     }
@@ -146,7 +152,8 @@ public class SolvedService implements SolvedRegister, SolvedFinder, SolvedMemoUp
         return solveds.stream()
                 .map(solved -> new SolvedWithTags(
                         solved,
-                        tagsByProblem.getOrDefault(solved.getProblem(), List.of())
+                        tagsByProblem.getOrDefault(solved.getProblem(), List.of()),
+                        null
                 ))
                 .toList();
     }

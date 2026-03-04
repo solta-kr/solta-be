@@ -13,6 +13,7 @@ public record RecentSolvedResponse(
         SolveType solveType,
         Integer solveTimeSeconds,
         String memo,
+        Integer earnedXp,
         ProblemDetail problem,
         LocalDateTime createdAt
 ) {
@@ -34,6 +35,7 @@ public record RecentSolvedResponse(
                 solved.getSolveType(),
                 solved.getSolveTimeSeconds(),
                 isOwner ? solved.getMemo() : null,
+                solvedWithTags.earnedXp(),
                 new ProblemDetail(
                         solved.getProblem().getId(),
                         solved.getProblem().getBojProblemId(),

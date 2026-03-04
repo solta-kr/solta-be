@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.solta.application.required.dto.AllSolvedAverage;
+import kr.solta.application.required.dto.SolvedXpRow;
 import kr.solta.application.required.dto.DailyActivity;
 import kr.solta.application.required.dto.TagWeaknessData;
 import kr.solta.application.required.dto.BadgeSummaryStats;
@@ -31,6 +32,15 @@ public interface SolvedRepository extends JpaRepository<Solved, Long> {
 
     @EntityGraph(attributePaths = "problem")
     List<Solved> findByMemberOrderBySolvedTimeDesc(Member member);
+
+    @Query("""
+                SELECT new kr.solta.application.required.dto.SolvedXpRow(s, x.xpAmount)
+                FROM Solved s
+                LEFT JOIN XpHistory x ON x.solved = s
+                WHERE s.member = :member
+                ORDER BY s.solvedTime DESC
+            """)
+    List<SolvedXpRow> findByMemberWithXpOrderBySolvedTimeDesc(@Param("member") Member member);
 
     @Query("""
                 select new kr.solta.domain.SolvedAverage(s.problem, avg(case when s.solveType = kr.solta.domain.SolveType.SELF then s.solveTimeSeconds else null end))
