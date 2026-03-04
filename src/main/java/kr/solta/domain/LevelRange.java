@@ -1,12 +1,13 @@
 package kr.solta.domain;
 
 public enum LevelRange {
-    LV_1_10  (1,  10,  0,         150,   "코딩 새싹"),
-    LV_11_30 (11, 30,  1_500,     375,   "알고리즘 탐험가"),
-    LV_31_60 (31, 60,  9_000,     1_200, "문제 해결사"),
-    LV_61_90 (61, 90,  45_000,    3_500, "알고리즘 장인"),
-    LV_91_95 (91, 95,  150_000,   8_000, "전설"),
-    LV_96_100(96, 100, 190_000,  20_000, "전설");
+    LV_1_10  (1,   10,  0,        150,   "Newbie"),
+    LV_11_30 (11,  30,  1_500,    375,   "Pupil"),
+    LV_31_60 (31,  60,  9_000,    1_200, "Specialist"),
+    LV_61_90 (61,  90,  45_000,   3_500, "Expert"),
+    LV_91_95 (91,  95,  150_000,  8_000, "Master"),
+    LV_96_99 (96,  99,  190_000, 20_000, "Master"),
+    LV_100   (100, 100, 270_000,      0, "Legendary");
 
     private final int startLevel;
     private final int endLevel;
@@ -36,7 +37,7 @@ public enum LevelRange {
         for (LevelRange range : values()) {
             if (level >= range.startLevel && level <= range.endLevel) return range;
         }
-        return LV_96_100;  // level > 100 시에도 최상위 구간 반환
+        return LV_100;  // level > 100 시에도 최상위 구간 반환
     }
 
     // ---- 계산 ----
