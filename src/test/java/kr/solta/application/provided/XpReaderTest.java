@@ -44,7 +44,7 @@ class XpReaderTest extends IntegrationTest {
         //then
         assertThat(response.totalXp()).isEqualTo(81);
         assertThat(response.level()).isEqualTo(1);
-        assertThat(response.title()).isEqualTo("코딩 새싹");
+        assertThat(response.title()).isEqualTo("Newbie");
         assertThat(response.currentLevelXp()).isEqualTo(81);
         assertThat(response.nextLevelRequiredXp()).isEqualTo(150);
         assertThat(response.progressPercent()).isEqualTo(54); // 81 * 100 / 150 = 54

@@ -83,13 +83,13 @@ class LevelRangeTest {
 
     @ParameterizedTest
     @CsvSource({
-            "1,   코딩 새싹",
-            "10,  코딩 새싹",
-            "11,  알고리즘 탐험가",
-            "31,  문제 해결사",
-            "61,  알고리즘 장인",
-            "91,  전설",
-            "100, 전설"
+            "1,   Newbie",
+            "10,  Newbie",
+            "11,  Pupil",
+            "31,  Specialist",
+            "61,  Expert",
+            "91,  Master",
+            "100, Legendary"
     })
     void 레벨별_타이틀이_올바르다(final int level, final String expectedTitle) {
         assertThat(LevelRange.getTitle(level)).isEqualTo(expectedTitle);
